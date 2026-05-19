@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Trophy, TrendingUp, Users, Zap } from 'lucide-react';
-import { fetchIPLData } from '../utils/gemini';
+import { ArrowRight, Trophy, TrendingUp, Users, Zap, Clock } from 'lucide-react';
+import { fetchIPLData, getLastUpdated } from '../utils/iplData';
 import { teamMeta } from '../data/teams';
 import TeamCard from '../components/TeamCard';
 
 const Home = () => {
   const [top4, setTop4] = useState(getFallbackTop4());
-  const [loading, setLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState('');
 
   useEffect(() => {
     const loadData = async () => {
@@ -31,10 +31,9 @@ const Home = () => {
           nrr: t.nrr,
         }));
         setTop4(formatted);
+        setLastUpdated(getLastUpdated());
       } catch {
         console.log('Using cached standings');
-      } finally {
-        setLoading(false);
       }
     };
     loadData();
@@ -42,7 +41,7 @@ const Home = () => {
 
   const stats = [
     { icon: Trophy, label: 'Teams', value: '10' },
-    { icon: TrendingUp, label: 'Matches Left', value: 'Live' },
+    { icon: TrendingUp, label: 'Matches Left', value: '6' },
     { icon: Users, label: 'Playoff Spots', value: '4' },
     { icon: Zap, label: 'Predictions', value: '∞' },
   ];
@@ -69,7 +68,7 @@ const Home = () => {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-orange/10 border border-accent-orange/30 text-accent-orange text-sm font-medium mb-6"
             >
               <Trophy className="w-4 h-4" />
-              <span>IPL 2025 Playoff Race</span>
+              <span>IPL 2026 Playoff Race</span>
             </motion.div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-6">
@@ -78,7 +77,7 @@ const Home = () => {
 
             <p className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto mb-8">
               Analyze the points table, predict match winners, and see which teams
-              make it to the IPL 2025 playoffs. Your predictions, your insights.
+              make it to the IPL 2026 playoffs. Your predictions, your insights.
             </p>
 
             <Link to="/predictor">
@@ -131,9 +130,15 @@ const Home = () => {
             <h2 className="text-2xl sm:text-3xl font-bold text-text-primary mb-2">
               Current Top 4
             </h2>
-            <p className="text-text-secondary">
-              {loading ? 'Loading live standings...' : 'Teams leading the playoff race'}
-            </p>
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-text-secondary">Teams leading the playoff race</p>
+              {lastUpdated && (
+                <span className="flex items-center gap-1 text-xs text-text-muted">
+                  <Clock className="w-3 h-3" />
+                  {lastUpdated}
+                </span>
+              )}
+            </div>
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

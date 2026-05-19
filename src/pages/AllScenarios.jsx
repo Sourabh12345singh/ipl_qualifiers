@@ -1,12 +1,12 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle, ArrowRight } from 'lucide-react';
+import { ArrowLeft, CheckCircle, ArrowRight, BarChart3 } from 'lucide-react';
 import { teamMeta } from '../data/teams';
 
 const AllScenarios = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { scenarios, selectedTeams } = location.state || {};
+  const { scenarios, totalScenarios, totalSimulations, selectedTeams } = location.state || {};
 
   if (!scenarios) {
     navigate('/predictor');
@@ -35,12 +35,18 @@ const AllScenarios = () => {
             Back to Predictor
           </button>
           <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mb-2">
-            <span className="gradient-text-blue">All Scenarios</span>
+            <span className="gradient-text-blue">All Qualification Scenarios</span>
           </h1>
-          <p className="text-text-secondary">
-            {scenarios.length} ways for{' '}
-            {selectedTeams.map((t) => t.toUpperCase()).join(', ')} to qualify
-          </p>
+          <div className="flex flex-wrap items-center gap-4 text-sm text-text-secondary">
+            <span>
+              {totalScenarios} ways for{' '}
+              {selectedTeams.map((t) => t.toUpperCase()).join(', ')} to qualify
+            </span>
+            <span className="flex items-center gap-1 text-text-muted">
+              <BarChart3 className="w-3.5 h-3.5" />
+              {totalSimulations?.toLocaleString()} combinations checked
+            </span>
+          </div>
         </motion.div>
 
         <div className="space-y-4">
@@ -49,7 +55,7 @@ const AllScenarios = () => {
               key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              transition={{ delay: index * 0.03 }}
               className="glass-card p-5"
             >
               <div className="flex items-center gap-2 mb-4">

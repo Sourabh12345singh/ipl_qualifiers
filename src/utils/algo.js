@@ -37,8 +37,8 @@ const generateScenarioText = (matches, outcomes, selectedTeamIds) => {
     teamMatchWins[id] = { total: 0, wins: 0 };
   });
 
-  matches.forEach((match, i) => {
-    const winner = outcomes[i];
+  matches.forEach((match) => {
+    const winner = outcomes[matches.indexOf(match)];
     const loser = match.team1 === winner ? match.team2 : match.team1;
 
     if (selectedTeamIds.includes(winner)) {
@@ -79,18 +79,18 @@ const generateScenarioText = (matches, outcomes, selectedTeamIds) => {
 export const findQualificationScenarios = (
   teams,
   remainingMatches,
-  selectedTeamIds
+  selectedTeamIds,
+  limit = 0
 ) => {
   if (selectedTeamIds.length === 0) {
     return { possible: false, message: 'Select at least one team' };
   }
 
-  const MAX_SCENARIOS = 10;
   const scenarios = [];
   let totalSimulations = 0;
 
   const dfs = (matchIndex, currentOutcomes) => {
-    if (scenarios.length >= MAX_SCENARIOS) return;
+    if (limit > 0 && scenarios.length >= limit) return;
 
     if (matchIndex === remainingMatches.length) {
       totalSimulations++;
@@ -135,7 +135,7 @@ export const findQualificationScenarios = (
 
   return {
     possible: true,
-    scenarios: scenarios.slice(0, 3),
+    scenarios,
     totalScenarios: scenarios.length,
     totalSimulations,
   };

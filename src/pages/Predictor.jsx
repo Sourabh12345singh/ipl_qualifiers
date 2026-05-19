@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lightbulb, RefreshCw, AlertCircle, Target } from 'lucide-react';
+import { Lightbulb, RefreshCw, AlertCircle, Target, Clock } from 'lucide-react';
 import { teamMeta } from '../data/teams';
-import { fetchIPLData } from '../utils/gemini';
+import { fetchIPLData, getLastUpdated, forceRefresh } from '../utils/iplData';
 import { calculateProbabilities, generateInsights, sortTeams } from '../utils/calculations';
 import { findQualificationScenarios } from '../utils/algo';
 import PointsTable from '../components/PointsTable';
@@ -18,16 +18,14 @@ const Predictor = () => {
   const [matches, setMatches] = useState(getFallbackMatches());
   const [matchPredictions, setMatchPredictions] = useState({});
   const [sortBy, setSortBy] = useState('points');
-  const [error, setError] = useState(null);
-  const [fetching, setFetching] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
   const [selectedTeams, setSelectedTeams] = useState([]);
   const [algoResult, setAlgoResult] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
 
   const loadData = async () => {
-    setFetching(true);
-    setError(null);
     try {
       const data = await fetchIPLData();
       const formattedTeams = data.pointsTable.map((t) => ({
@@ -53,11 +51,9 @@ const Predictor = () => {
         venue: m.venue || 'TBA',
       }));
       setMatches(formattedMatches);
-    } catch (err) {
-      console.error('Failed to fetch IPL data:', err);
-      setError('Using latest cached standings. API fetch failed.');
-    } finally {
-      setFetching(false);
+      setLastUpdated(getLastUpdated());
+    } catch {
+      console.log('Using default data');
     }
   };
 
@@ -93,7 +89,7 @@ const Predictor = () => {
     setIsRunning(true);
 
     setTimeout(() => {
-      const result = findQualificationScenarios(teams, matches, selectedTeams);
+      const result = findQualificationScenarios(teams, matches, selectedTeams, 3);
       setAlgoResult(result);
       setIsRunning(false);
     }, 100);
@@ -106,9 +102,17 @@ const Predictor = () => {
       state: {
         scenarios: allResult.scenarios,
         totalScenarios: allResult.totalScenarios,
+        totalSimulations: allResult.totalSimulations,
         selectedTeams,
       },
     });
+  };
+
+  const handleForceRefresh = async () => {
+    setRefreshing(true);
+    await forceRefresh();
+    await loadData();
+    setRefreshing(false);
   };
 
   const probabilities = teams.length > 0 ? calculateProbabilities(teams, matchPredictions) : [];
@@ -130,20 +134,28 @@ const Predictor = () => {
               <h1 className="text-3xl sm:text-4xl font-bold text-text-primary mb-2">
                 <span className="gradient-text-blue">Playoff Predictor</span>
               </h1>
-              <p className="text-text-secondary">
-                Live IPL standings, match predictions &amp; qualification analysis
-              </p>
+              <div className="flex items-center gap-3">
+                <p className="text-text-secondary">
+                  IPL standings &amp; qualification analysis
+                </p>
+                {lastUpdated && (
+                  <span className="flex items-center gap-1 text-xs text-text-muted">
+                    <Clock className="w-3 h-3" />
+                    Updated {lastUpdated}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex gap-2">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={loadData}
-                disabled={fetching}
+                onClick={handleForceRefresh}
+                disabled={refreshing}
                 className="flex items-center gap-2 px-4 py-2 glass-card text-text-secondary text-sm hover:text-text-primary transition-colors disabled:opacity-50"
               >
-                <RefreshCw className={`w-4 h-4 ${fetching ? 'animate-spin' : ''}`} />
-                {fetching ? 'Refreshing...' : 'Refresh'}
+                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                {refreshing ? 'Refreshing...' : 'Refresh'}
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -155,17 +167,6 @@ const Predictor = () => {
               </motion.button>
             </div>
           </div>
-
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 flex items-center gap-2 p-3 rounded-xl bg-accent-orange/10 border border-accent-orange/30 text-accent-orange text-sm"
-            >
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>{error}</span>
-            </motion.div>
-          )}
         </motion.div>
 
         <div className="mb-8">

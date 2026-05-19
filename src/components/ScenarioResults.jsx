@@ -29,13 +29,16 @@ const ScenarioResults = ({ result, onViewAll, getTeamById }) => {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-4"
     >
-      <div className="flex items-center gap-2 mb-2">
-        <CheckCircle className="w-5 h-5 text-accent-green" />
-        <h3 className="text-lg font-bold text-text-primary">
-          {result.totalScenarios > 3
-            ? `${result.totalScenarios} ways found`
-            : `${result.totalScenarios} way${result.totalScenarios > 1 ? 's' : ''} found`}
-        </h3>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <CheckCircle className="w-5 h-5 text-accent-green" />
+          <h3 className="text-lg font-bold text-text-primary">
+            {result.totalScenarios} way{result.totalScenarios > 1 ? 's' : ''} found
+          </h3>
+        </div>
+        <span className="text-xs text-text-muted">
+          {result.totalSimulations?.toLocaleString()} checked
+        </span>
       </div>
 
       {result.scenarios.map((scenario, index) => (
@@ -96,7 +99,7 @@ const ScenarioResults = ({ result, onViewAll, getTeamById }) => {
         </motion.div>
       ))}
 
-      {result.totalScenarios > 3 && (
+      {result.totalScenarios > result.scenarios.length && (
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
