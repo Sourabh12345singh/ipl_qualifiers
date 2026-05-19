@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lightbulb, Target, Clock, TrendingUp } from 'lucide-react';
+import { Lightbulb, Target, Clock, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { teamMeta } from '../data/teams';
 import { fetchIPLData, getLastUpdated } from '../utils/iplData';
 import { getPredictedTable, generateInsights, sortTeams } from '../utils/calculations';
 import { findQualificationScenarios } from '../utils/algo';
 import PointsTable from '../components/PointsTable';
 import MatchCard from '../components/MatchCard';
+import CompletedMatchCard from '../components/CompletedMatchCard';
 import TeamSelector from '../components/TeamSelector';
 import ScenarioResults from '../components/ScenarioResults';
 
@@ -15,9 +16,11 @@ const Predictor = () => {
   const navigate = useNavigate();
   const [teams, setTeams] = useState(getFallbackTeams());
   const [matches, setMatches] = useState(getFallbackMatches());
+  const [completedMatches, setCompletedMatches] = useState([]);
   const [matchPredictions, setMatchPredictions] = useState({});
   const [sortBy, setSortBy] = useState('points');
   const [lastUpdated, setLastUpdated] = useState('');
+  const [showAllCompleted, setShowAllCompleted] = useState(false);
 
   const [selectedTeams, setSelectedTeams] = useState([]);
   const [algoResult, setAlgoResult] = useState(null);
@@ -49,6 +52,20 @@ const Predictor = () => {
         venue: m.venue || 'TBA',
       }));
       setMatches(formattedMatches);
+
+      const formattedCompleted = (data.completedMatches || []).map((m) => ({
+        id: m.id,
+        matchNumber: m.matchNumber,
+        team1: m.team1,
+        team2: m.team2,
+        date: m.date,
+        venue: m.venue,
+        winner: m.winner,
+        result: m.result,
+        team1Score: m.team1Score,
+        team2Score: m.team2Score,
+      }));
+      setCompletedMatches(formattedCompleted);
       setLastUpdated(getLastUpdated());
     } catch {
       console.log('Using default data');
@@ -203,8 +220,32 @@ const Predictor = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.15 }}
             >
+              {completedMatches.length > 0 && (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl sm:text-2xl font-bold text-text-primary flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-accent-green" />
+                      Completed Matches
+                    </h2>
+                    {completedMatches.length > 4 && (
+                      <button
+                        onClick={() => setShowAllCompleted(!showAllCompleted)}
+                        className="text-xs text-accent-blue hover:underline"
+                      >
+                        {showAllCompleted ? 'Show less' : `Show all (${completedMatches.length})`}
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                    {(showAllCompleted ? completedMatches : completedMatches.slice(0, 4)).map((match) => (
+                      <CompletedMatchCard key={match.id} match={match} />
+                    ))}
+                  </div>
+                </>
+              )}
+
               <h2 className="text-xl sm:text-2xl font-bold text-text-primary mb-4">
                 Upcoming Matches
               </h2>
@@ -370,24 +411,24 @@ const Predictor = () => {
 
 const getFallbackTeams = () => [
   { id: 'rcb', shortName: 'RCB', name: 'Royal Challengers Bengaluru', color: '#ec1c24', logo: '🔴', played: 13, won: 9, lost: 4, noResult: 0, points: 18, nrr: 1.065 },
-  { id: 'gt', shortName: 'GT', name: 'Gujarat Titans', color: '#1c2841', logo: '🟡', played: 13, won: 8, lost: 5, noResult: 0, points: 16, nrr: 0.4 },
+  { id: 'gt', shortName: 'GT', name: 'Gujarat Titans', color: '#1c2841', logo: '', played: 13, won: 8, lost: 5, noResult: 0, points: 16, nrr: 0.4 },
   { id: 'srh', shortName: 'SRH', name: 'Sunrisers Hyderabad', color: '#f7a721', logo: '☀️', played: 13, won: 8, lost: 5, noResult: 0, points: 16, nrr: 0.35 },
   { id: 'pbks', shortName: 'PBKS', name: 'Punjab Kings', color: '#dd1f2d', logo: '🔶', played: 13, won: 6, lost: 6, noResult: 1, points: 13, nrr: 0.227 },
   { id: 'rr', shortName: 'RR', name: 'Rajasthan Royals', color: '#ea1a85', logo: '👑', played: 12, won: 6, lost: 6, noResult: 0, points: 12, nrr: 0.027 },
   { id: 'csk', shortName: 'CSK', name: 'Chennai Super Kings', color: '#fdb913', logo: '🦁', played: 13, won: 6, lost: 7, noResult: 0, points: 12, nrr: -0.016 },
-  { id: 'dc', shortName: 'DC', name: 'Delhi Capitals', color: '#004c93', logo: '🏛️', played: 13, won: 6, lost: 7, noResult: 0, points: 12, nrr: -0.871 },
+  { id: 'dc', shortName: 'DC', name: 'Delhi Capitals', color: '#004c93', logo: '️', played: 13, won: 6, lost: 7, noResult: 0, points: 12, nrr: -0.871 },
   { id: 'kkr', shortName: 'KKR', name: 'Kolkata Knight Riders', color: '#3a225d', logo: '🟣', played: 12, won: 5, lost: 6, noResult: 1, points: 11, nrr: -0.038 },
-  { id: 'mi', shortName: 'MI', name: 'Mumbai Indians', color: '#004ba0', logo: '🔵', played: 12, won: 4, lost: 8, noResult: 0, points: 8, nrr: -0.504 },
+  { id: 'mi', shortName: 'MI', name: 'Mumbai Indians', color: '#004ba0', logo: '', played: 12, won: 4, lost: 8, noResult: 0, points: 8, nrr: -0.504 },
   { id: 'lsg', shortName: 'LSG', name: 'Lucknow Super Giants', color: '#00b2e3', logo: '⚡', played: 12, won: 4, lost: 8, noResult: 0, points: 8, nrr: -0.701 },
 ];
 
 const getFallbackMatches = () => [
-  { id: 1, team1: 'rr', team2: 'csk', date: '2026-05-20', venue: 'Sawai Mansingh Stadium' },
-  { id: 2, team1: 'kkr', team2: 'mi', date: '2026-05-21', venue: 'Eden Gardens' },
-  { id: 3, team1: 'lsg', team2: 'dc', date: '2026-05-22', venue: 'BRSABV Ekana Stadium' },
-  { id: 4, team1: 'rcb', team2: 'gt', date: '2026-05-23', venue: 'M Chinnaswamy Stadium' },
-  { id: 5, team1: 'srh', team2: 'pbks', date: '2026-05-24', venue: 'Rajiv Gandhi Stadium' },
-  { id: 6, team1: 'mi', team2: 'rr', date: '2026-05-25', venue: 'Wankhede Stadium' },
+  { id: 65, team1: 'kkr', team2: 'mi', date: '2026-05-20', venue: 'Eden Gardens' },
+  { id: 66, team1: 'gt', team2: 'csk', date: '2026-05-21', venue: 'Narendra Modi Stadium' },
+  { id: 67, team1: 'srh', team2: 'rcb', date: '2026-05-22', venue: 'Rajiv Gandhi Stadium' },
+  { id: 68, team1: 'lsg', team2: 'pbks', date: '2026-05-23', venue: 'BRSABV Ekana Stadium' },
+  { id: 69, team1: 'mi', team2: 'rr', date: '2026-05-24', venue: 'Wankhede Stadium' },
+  { id: 70, team1: 'kkr', team2: 'dc', date: '2026-05-24', venue: 'Eden Gardens' },
 ];
 
 export default Predictor;
