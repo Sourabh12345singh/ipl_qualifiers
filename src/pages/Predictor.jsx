@@ -124,6 +124,8 @@ const Predictor = () => {
 
   const predictedCount = Object.values(matchPredictions).filter(Boolean).length;
 
+  const maxPoints = predictedTable.length > 0 ? predictedTable[0].predictedPoints : 20;
+
   return (
     <div className="min-h-screen bg-gradient-hero pt-24 pb-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -281,49 +283,66 @@ const Predictor = () => {
                   {predictedTable.map((team, index) => {
                     const isPlayoff = index < 4;
                     const pointsChanged = team.predictedPoints !== team.points;
+                    const barWidth = (team.predictedPoints / maxPoints) * 100;
+
                     return (
                       <motion.div
                         key={team.id}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        className={`flex items-center gap-3 p-3 transition-colors ${
+                        className={`p-3 transition-colors ${
                           isPlayoff ? 'bg-accent-green/5' : ''
                         }`}
                       >
-                        <div
-                          className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-                            isPlayoff
-                              ? 'bg-accent-green/20 text-accent-green'
-                              : 'bg-bg-card text-text-muted'
-                          }`}
-                        >
-                          {index + 1}
-                        </div>
+                        <div className="flex items-center gap-3 mb-2">
+                          <div
+                            className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+                              isPlayoff
+                                ? 'bg-accent-green/20 text-accent-green'
+                                : 'bg-bg-card text-text-muted'
+                            }`}
+                          >
+                            {index + 1}
+                          </div>
 
-                        <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-lg flex-shrink-0"
-                          style={{ backgroundColor: `${team.color}30` }}
-                        >
-                          {team.logo}
-                        </div>
+                          <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-lg flex-shrink-0"
+                            style={{ backgroundColor: `${team.color}30` }}
+                          >
+                            {team.logo}
+                          </div>
 
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-text-primary text-sm truncate">
-                            {team.shortName}
-                          </p>
-                        </div>
-
-                        <div className="text-right">
-                          <p className="font-mono font-bold text-text-primary text-sm">
-                            {team.predictedPoints}
-                          </p>
-                          {pointsChanged && (
-                            <p className="text-xs text-accent-green">
-                              {team.predictedPoints > team.points ? '+' : ''}
-                              {team.predictedPoints - team.points}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-text-primary text-sm truncate">
+                              {team.shortName}
                             </p>
-                          )}
+                          </div>
+
+                          <div className="text-right">
+                            <p className="font-mono font-bold text-text-primary text-sm">
+                              {team.predictedPoints}
+                            </p>
+                            {pointsChanged && (
+                              <p className="text-xs text-accent-green">
+                                {team.predictedPoints > team.points ? '+' : ''}
+                                {team.predictedPoints - team.points}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="relative h-2 bg-bg-card rounded-full overflow-hidden ml-10">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${barWidth}%` }}
+                            transition={{ duration: 0.6, ease: 'easeOut' }}
+                            className={`h-full rounded-full ${
+                              isPlayoff
+                                ? 'bg-gradient-to-r from-accent-green to-emerald-400'
+                                : 'bg-gradient-to-r from-text-muted/50 to-text-muted/30'
+                            }`}
+                          />
                         </div>
                       </motion.div>
                     );
