@@ -30,16 +30,16 @@ const Navbar = () => {
           : 'bg-transparent'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16">
           <Link to="/" className="flex items-center gap-2 group">
             <motion.div
               whileHover={{ rotate: 15, scale: 1.1 }}
-              className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-orange to-accent-gold flex items-center justify-center"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-accent-orange to-accent-gold flex items-center justify-center"
             >
-              <Trophy className="w-5 h-5 text-white" />
+              <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </motion.div>
-            <span className="text-xl font-bold gradient-text">IPL Predictor</span>
+            <span className="text-lg sm:text-xl font-bold gradient-text">IPL Predictor</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-1">
@@ -51,14 +51,14 @@ const Navbar = () => {
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 ${
+                    className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl transition-all duration-200 ${
                       isActive
                         ? 'bg-accent-orange/20 text-accent-orange'
                         : 'text-text-secondary hover:text-text-primary hover:bg-bg-card'
                     }`}
                   >
                     <Icon className="w-4 h-4" />
-                    <span className="font-medium">{link.label}</span>
+                    <span className="font-medium text-sm">{link.label}</span>
                   </motion.div>
                 </Link>
               );
@@ -70,9 +70,9 @@ const Navbar = () => {
             className="md:hidden p-2 rounded-lg hover:bg-bg-card transition-colors"
           >
             {mobileOpen ? (
-              <X className="w-6 h-6 text-text-primary" />
+              <X className="w-5 h-5 text-text-primary" />
             ) : (
-              <Menu className="w-6 h-6 text-text-primary" />
+              <Menu className="w-5 h-5 text-text-primary" />
             )}
           </button>
         </div>
@@ -87,7 +87,7 @@ const Navbar = () => {
             transition={{ duration: 0.2 }}
             className="md:hidden bg-bg-secondary/95 backdrop-blur-xl border-b border-border-glass"
           >
-            <div className="px-4 py-3 space-y-1">
+            <div className="px-3 py-2 space-y-1">
               {navLinks.map((link) => {
                 const Icon = link.icon;
                 const isActive = location.pathname === link.path;

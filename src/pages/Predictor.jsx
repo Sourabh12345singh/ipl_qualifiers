@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lightbulb, RefreshCw, Target, Clock, TrendingUp } from 'lucide-react';
+import { Lightbulb, Target, Clock, TrendingUp } from 'lucide-react';
 import { teamMeta } from '../data/teams';
-import { fetchIPLData, getLastUpdated, forceRefresh } from '../utils/iplData';
-import { getPredictedTable, calculateQualificationStatus, generateInsights, sortTeams } from '../utils/calculations';
+import { fetchIPLData, getLastUpdated } from '../utils/iplData';
+import { getPredictedTable, generateInsights, sortTeams } from '../utils/calculations';
 import { findQualificationScenarios } from '../utils/algo';
 import PointsTable from '../components/PointsTable';
 import MatchCard from '../components/MatchCard';
@@ -18,7 +18,6 @@ const Predictor = () => {
   const [matchPredictions, setMatchPredictions] = useState({});
   const [sortBy, setSortBy] = useState('points');
   const [lastUpdated, setLastUpdated] = useState('');
-  const [refreshing, setRefreshing] = useState(false);
 
   const [selectedTeams, setSelectedTeams] = useState([]);
   const [algoResult, setAlgoResult] = useState(null);
@@ -108,15 +107,7 @@ const Predictor = () => {
     });
   };
 
-  const handleForceRefresh = async () => {
-    setRefreshing(true);
-    await forceRefresh();
-    await loadData();
-    setRefreshing(false);
-  };
-
   const predictedTable = getPredictedTable(teams, matches, matchPredictions);
-  const qualStatus = calculateQualificationStatus(teams, matches, matchPredictions);
   const insights = generateInsights(teams, matches, matchPredictions);
   const sortedTeams = sortTeams(teams, sortBy);
 
@@ -127,21 +118,21 @@ const Predictor = () => {
   const maxPoints = predictedTable.length > 0 ? predictedTable[0].predictedPoints : 20;
 
   return (
-    <div className="min-h-screen bg-gradient-hero pt-24 pb-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-hero pt-20 pb-16 px-3 sm:px-4 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-6"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-text-primary mb-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-text-primary mb-1">
                 <span className="gradient-text-blue">Playoff Predictor</span>
               </h1>
-              <div className="flex items-center gap-3">
-                <p className="text-text-secondary">
-                  Select match winners to predict playoff qualification
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-text-secondary">
+                  Pick winners to predict playoffs
                 </p>
                 {lastUpdated && (
                   <span className="flex items-center gap-1 text-xs text-text-muted">
@@ -151,30 +142,18 @@ const Predictor = () => {
                 )}
               </div>
             </div>
-            <div className="flex gap-2">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleForceRefresh}
-                disabled={refreshing}
-                className="flex items-center gap-2 px-4 py-2 glass-card text-text-secondary text-sm hover:text-text-primary transition-colors disabled:opacity-50"
-              >
-                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                Refresh
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleReset}
-                className="flex items-center gap-2 px-4 py-2 glass-card text-text-secondary text-sm hover:text-text-primary transition-colors"
-              >
-                Reset
-              </motion.button>
-            </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleReset}
+              className="self-start flex items-center gap-2 px-4 py-2 glass-card text-text-secondary text-sm hover:text-text-primary transition-colors"
+            >
+              Reset
+            </motion.button>
           </div>
         </motion.div>
 
-        <div className="mb-8">
+        <div className="mb-6">
           <TeamSelector
             teams={teams}
             selected={selectedTeams}
@@ -190,11 +169,11 @@ const Predictor = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mb-8 overflow-hidden"
+              className="mb-6 overflow-hidden"
             >
               <div className="flex items-center gap-2 mb-4">
                 <Target className="w-5 h-5 text-accent-green" />
-                <h2 className="text-xl sm:text-2xl font-bold text-text-primary">
+                <h2 className="text-lg sm:text-xl font-bold text-text-primary">
                   Qualification Analysis
                 </h2>
               </div>
@@ -265,14 +244,14 @@ const Predictor = () => {
             >
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="w-5 h-5 text-accent-green" />
-                <h2 className="text-xl sm:text-2xl font-bold text-text-primary">
+                <h2 className="text-lg sm:text-xl font-bold text-text-primary">
                   Predicted Standings
                 </h2>
               </div>
 
               <div className="glass-card overflow-hidden">
-                <div className="p-4 border-b border-border-glass">
-                  <p className="text-sm text-text-secondary">
+                <div className="p-3 sm:p-4 border-b border-border-glass">
+                  <p className="text-xs sm:text-sm text-text-secondary">
                     {predictedCount > 0
                       ? `${predictedCount}/${matches.length} matches predicted`
                       : 'Select winners above'}
@@ -295,9 +274,9 @@ const Predictor = () => {
                           isPlayoff ? 'bg-accent-green/5' : ''
                         }`}
                       >
-                        <div className="flex items-center gap-3 mb-2">
+                        <div className="flex items-center gap-2 sm:gap-3 mb-2">
                           <div
-                            className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+                            className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold flex-shrink-0 ${
                               isPlayoff
                                 ? 'bg-accent-green/20 text-accent-green'
                                 : 'bg-bg-card text-text-muted'
@@ -307,20 +286,20 @@ const Predictor = () => {
                           </div>
 
                           <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-lg flex-shrink-0"
+                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-base sm:text-lg flex-shrink-0"
                             style={{ backgroundColor: `${team.color}30` }}
                           >
                             {team.logo}
                           </div>
 
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-text-primary text-sm truncate">
+                            <p className="font-semibold text-text-primary text-xs sm:text-sm truncate">
                               {team.shortName}
                             </p>
                           </div>
 
                           <div className="text-right">
-                            <p className="font-mono font-bold text-text-primary text-sm">
+                            <p className="font-mono font-bold text-text-primary text-xs sm:text-sm">
                               {team.predictedPoints}
                             </p>
                             {pointsChanged && (
@@ -332,7 +311,7 @@ const Predictor = () => {
                           </div>
                         </div>
 
-                        <div className="relative h-2 bg-bg-card rounded-full overflow-hidden ml-10">
+                        <div className="relative h-2 bg-bg-card rounded-full overflow-hidden ml-9 sm:ml-10">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${barWidth}%` }}
@@ -363,11 +342,11 @@ const Predictor = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <h2 className="text-xl sm:text-2xl font-bold text-text-primary mb-4 flex items-center gap-2">
+              <h2 className="text-lg sm:text-xl font-bold text-text-primary mb-4 flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-accent-gold" />
                 Insights
               </h2>
-              <div className="glass-card p-5 space-y-4">
+              <div className="glass-card p-4 sm:p-5 space-y-3">
                 {insights.map((insight, index) => (
                   <motion.div
                     key={index}
@@ -376,8 +355,8 @@ const Predictor = () => {
                     transition={{ delay: 0.5 + index * 0.1 }}
                     className="flex gap-3"
                   >
-                    <div className="w-2 h-2 rounded-full bg-accent-gold mt-2 flex-shrink-0"></div>
-                    <p className="text-sm text-text-secondary">{insight}</p>
+                    <div className="w-2 h-2 rounded-full bg-accent-gold mt-1.5 flex-shrink-0"></div>
+                    <p className="text-xs sm:text-sm text-text-secondary">{insight}</p>
                   </motion.div>
                 ))}
               </div>

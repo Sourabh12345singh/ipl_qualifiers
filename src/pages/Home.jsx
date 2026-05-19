@@ -48,11 +48,11 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero">
-      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <section className="relative pt-24 sm:pt-32 pb-16 sm:pb-20 px-3 sm:px-4 lg:px-8">
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-accent-orange/10 rounded-full blur-3xl animate-float"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent-blue/10 rounded-full blur-3xl animate-float"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent-purple/5 rounded-full blur-3xl"></div>
+          <div className="absolute top-20 left-10 w-48 sm:w-72 h-48 sm:h-72 bg-accent-orange/10 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-20 right-10 w-64 sm:w-96 h-64 sm:h-96 bg-accent-blue/10 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-accent-purple/5 rounded-full blur-3xl"></div>
         </div>
 
         <div className="relative max-w-7xl mx-auto text-center">
@@ -65,38 +65,38 @@ const Home = () => {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: 'spring' }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-orange/10 border border-accent-orange/30 text-accent-orange text-sm font-medium mb-6"
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent-orange/10 border border-accent-orange/30 text-accent-orange text-xs sm:text-sm font-medium mb-4 sm:mb-6"
             >
-              <Trophy className="w-4 h-4" />
+              <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>IPL 2026 Playoff Race</span>
             </motion.div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-6">
+            <h1 className="text-3xl sm:text-4xl lg:text-7xl font-bold mb-4 sm:mb-6">
               <span className="gradient-text">Predict The Playoffs</span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto mb-8">
+            <p className="text-base sm:text-lg lg:text-xl text-text-secondary max-w-2xl mx-auto mb-6 sm:mb-8 px-2">
               Analyze the points table, predict match winners, and see which teams
-              make it to the IPL 2026 playoffs. Your predictions, your insights.
+              make it to the IPL 2026 playoffs.
             </p>
 
             <Link to="/predictor">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-accent-orange to-accent-gold rounded-xl text-bg-primary font-bold text-lg shadow-lg shadow-accent-orange/30 hover:shadow-accent-orange/50 transition-shadow"
+                className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-accent-orange to-accent-gold rounded-xl text-bg-primary font-bold text-base sm:text-lg shadow-lg shadow-accent-orange/30 hover:shadow-accent-orange/50 transition-shadow"
               >
                 Start Predicting
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </motion.button>
             </Link>
           </motion.div>
         </div>
       </section>
 
-      <section className="px-4 sm:px-6 lg:px-8 pb-16">
+      <section className="px-3 sm:px-4 lg:px-8 pb-12 sm:pb-16">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
@@ -105,13 +105,13 @@ const Home = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 + index * 0.1 }}
-                  className="glass-card p-5 text-center"
+                  className="glass-card p-3 sm:p-5 text-center"
                 >
-                  <Icon className="w-8 h-8 mx-auto mb-2 text-accent-orange" />
-                  <p className="text-2xl font-bold text-text-primary font-mono">
+                  <Icon className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1.5 sm:mb-2 text-accent-orange" />
+                  <p className="text-xl sm:text-2xl font-bold text-text-primary font-mono">
                     {stat.value}
                   </p>
-                  <p className="text-sm text-text-muted">{stat.label}</p>
+                  <p className="text-xs sm:text-sm text-text-muted">{stat.label}</p>
                 </motion.div>
               );
             })}
@@ -119,19 +119,19 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="px-4 sm:px-6 lg:px-8 pb-20">
+      <section className="px-3 sm:px-4 lg:px-8 pb-16 sm:pb-20">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="text-center mb-8"
+            className="text-center mb-6 sm:mb-8"
           >
-            <h2 className="text-2xl sm:text-3xl font-bold text-text-primary mb-2">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-text-primary mb-2">
               Current Top 4
             </h2>
             <div className="flex items-center justify-center gap-2">
-              <p className="text-text-secondary">Teams leading the playoff race</p>
+              <p className="text-sm sm:text-base text-text-secondary">Teams leading the playoff race</p>
               {lastUpdated && (
                 <span className="flex items-center gap-1 text-xs text-text-muted">
                   <Clock className="w-3 h-3" />
@@ -141,7 +141,7 @@ const Home = () => {
             </div>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {top4.map((team, index) => (
               <motion.div
                 key={team.id}
@@ -158,16 +158,16 @@ const Home = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2 }}
-            className="text-center mt-8"
+            className="text-center mt-6 sm:mt-8"
           >
             <Link to="/predictor">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="inline-flex items-center gap-2 px-6 py-3 glass-card text-text-primary font-medium hover:bg-bg-card-hover transition-colors"
+                className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 glass-card text-text-primary font-medium text-sm sm:text-base hover:bg-bg-card-hover transition-colors"
               >
                 View Full Points Table
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </motion.button>
             </Link>
           </motion.div>

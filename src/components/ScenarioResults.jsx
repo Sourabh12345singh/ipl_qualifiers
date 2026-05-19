@@ -9,11 +9,11 @@ const ScenarioResults = ({ result, onViewAll, getTeamById }) => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-card p-6 border-red-500/30"
+        className="glass-card p-4 sm:p-6 border-red-500/30"
       >
         <div className="flex items-center gap-3 mb-3">
-          <XCircle className="w-6 h-6 text-accent-orange" />
-          <h3 className="text-lg font-bold text-text-primary">Not Possible</h3>
+          <XCircle className="w-5 h-5 sm:w-6 sm:h-6 text-accent-orange" />
+          <h3 className="text-base sm:text-lg font-bold text-text-primary">Not Possible</h3>
         </div>
         <p className="text-text-secondary text-sm">{result.message}</p>
         <p className="text-xs text-text-muted mt-2">
@@ -32,11 +32,11 @@ const ScenarioResults = ({ result, onViewAll, getTeamById }) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <CheckCircle className="w-5 h-5 text-accent-green" />
-          <h3 className="text-lg font-bold text-text-primary">
+          <h3 className="text-base sm:text-lg font-bold text-text-primary">
             {result.totalScenarios} way{result.totalScenarios > 1 ? 's' : ''} found
           </h3>
         </div>
-        <span className="text-xs text-text-muted">
+        <span className="text-xs text-text-muted hidden sm:inline">
           {result.totalSimulations?.toLocaleString()} checked
         </span>
       </div>
@@ -47,31 +47,31 @@ const ScenarioResults = ({ result, onViewAll, getTeamById }) => {
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: index * 0.1 }}
-          className="glass-card p-4 sm:p-5"
+          className="glass-card p-3 sm:p-5"
         >
           <div className="flex items-center gap-2 mb-3">
-            <span className="w-7 h-7 rounded-full bg-accent-green/20 text-accent-green flex items-center justify-center text-sm font-bold">
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-accent-green/20 text-accent-green flex items-center justify-center text-xs sm:text-sm font-bold">
               {index + 1}
             </span>
-            <h4 className="font-semibold text-text-primary">
+            <h4 className="font-semibold text-text-primary text-sm sm:text-base">
               Scenario {index + 1}
             </h4>
           </div>
 
-          <div className="space-y-2 mb-4">
+          <div className="space-y-1.5 sm:space-y-2 mb-4">
             {scenario.scenarioText.map((line, i) => (
               <div key={i} className="flex items-start gap-2">
-                <ArrowRight className="w-3.5 h-3.5 text-accent-gold mt-1 flex-shrink-0" />
-                <p className="text-sm text-text-secondary">{line}</p>
+                <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent-gold mt-1 flex-shrink-0" />
+                <p className="text-xs sm:text-sm text-text-secondary">{line}</p>
               </div>
             ))}
           </div>
 
-          <div className="bg-bg-card/50 rounded-lg p-3">
+          <div className="bg-bg-card/50 rounded-lg p-2.5 sm:p-3">
             <p className="text-xs text-text-muted mb-2 font-semibold uppercase tracking-wider">
               Final Top 4
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {scenario.finalStandings.map((team, i) => {
                 const meta = getTeamById(team.id);
                 return (
@@ -107,7 +107,7 @@ const ScenarioResults = ({ result, onViewAll, getTeamById }) => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={onViewAll}
-          className="w-full flex items-center justify-center gap-2 p-3 glass-card text-accent-blue font-medium hover:bg-bg-card-hover transition-colors"
+          className="w-full flex items-center justify-center gap-2 p-3 glass-card text-accent-blue font-medium hover:bg-bg-card-hover transition-colors text-sm"
         >
           <Eye className="w-4 h-4" />
           View all {result.totalScenarios} scenarios
