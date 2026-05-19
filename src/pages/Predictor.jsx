@@ -1,0 +1,342 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Lightbulb, RefreshCw, AlertCircle, Target } from 'lucide-react';
+import { teamMeta } from '../data/teams';
+import { fetchIPLData } from '../utils/gemini';
+import { calculateProbabilities, generateInsights, sortTeams } from '../utils/calculations';
+import { findQualificationScenarios } from '../utils/algo';
+import PointsTable from '../components/PointsTable';
+import MatchCard from '../components/MatchCard';
+import ProbabilityBar from '../components/ProbabilityBar';
+import TeamSelector from '../components/TeamSelector';
+import ScenarioResults from '../components/ScenarioResults';
+
+const Predictor = () => {
+  const navigate = useNavigate();
+  const [teams, setTeams] = useState(getFallbackTeams());
+  const [matches, setMatches] = useState(getFallbackMatches());
+  const [matchPredictions, setMatchPredictions] = useState({});
+  const [sortBy, setSortBy] = useState('points');
+  const [error, setError] = useState(null);
+  const [fetching, setFetching] = useState(false);
+
+  const [selectedTeams, setSelectedTeams] = useState([]);
+  const [algoResult, setAlgoResult] = useState(null);
+  const [isRunning, setIsRunning] = useState(false);
+
+  const loadData = async () => {
+    setFetching(true);
+    setError(null);
+    try {
+      const data = await fetchIPLData();
+      const formattedTeams = data.pointsTable.map((t) => ({
+        id: t.short.toLowerCase(),
+        shortName: t.short,
+        name: t.team,
+        color: teamMeta[t.short]?.color || '#888888',
+        logo: teamMeta[t.short]?.logo || '🏏',
+        played: t.played,
+        won: t.won,
+        lost: t.lost,
+        noResult: t.noResult || 0,
+        points: t.points,
+        nrr: t.nrr,
+      }));
+      setTeams(formattedTeams);
+
+      const formattedMatches = data.remainingMatches.map((m, i) => ({
+        id: m.id || i + 1,
+        team1: m.team1.toLowerCase(),
+        team2: m.team2.toLowerCase(),
+        date: m.date,
+        venue: m.venue || 'TBA',
+      }));
+      setMatches(formattedMatches);
+    } catch (err) {
+      console.error('Failed to fetch IPL data:', err);
+      setError('Using latest cached standings. API fetch failed.');
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleSelectWinner = (matchKey, winnerId) => {
+    setMatchPredictions((prev) => ({
+      ...prev,
+      [matchKey]: prev[matchKey] === winnerId ? null : winnerId,
+    }));
+  };
+
+  const handleReset = () => {
+    setMatchPredictions({});
+    setSelectedTeams([]);
+    setAlgoResult(null);
+  };
+
+  const handleToggleTeam = (teamId) => {
+    setSelectedTeams((prev) =>
+      prev.includes(teamId)
+        ? prev.filter((id) => id !== teamId)
+        : prev.length < 4
+        ? [...prev, teamId]
+        : prev
+    );
+  };
+
+  const handleRunAnalysis = () => {
+    if (selectedTeams.length === 0) return;
+    setIsRunning(true);
+
+    setTimeout(() => {
+      const result = findQualificationScenarios(teams, matches, selectedTeams);
+      setAlgoResult(result);
+      setIsRunning(false);
+    }, 100);
+  };
+
+  const handleViewAllScenarios = () => {
+    if (!algoResult || !algoResult.possible) return;
+    const allResult = findQualificationScenarios(teams, matches, selectedTeams);
+    navigate('/scenarios', {
+      state: {
+        scenarios: allResult.scenarios,
+        totalScenarios: allResult.totalScenarios,
+        selectedTeams,
+      },
+    });
+  };
+
+  const probabilities = teams.length > 0 ? calculateProbabilities(teams, matchPredictions) : [];
+  const insights = teams.length > 0 ? generateInsights(teams, matchPredictions) : [];
+  const sortedTeams = sortTeams(teams, sortBy);
+
+  const getTeamById = (id) => teams.find((t) => t.id === id);
+
+  return (
+    <div className="min-h-screen bg-gradient-hero pt-24 pb-20 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-text-primary mb-2">
+                <span className="gradient-text-blue">Playoff Predictor</span>
+              </h1>
+              <p className="text-text-secondary">
+                Live IPL standings, match predictions &amp; qualification analysis
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={loadData}
+                disabled={fetching}
+                className="flex items-center gap-2 px-4 py-2 glass-card text-text-secondary text-sm hover:text-text-primary transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${fetching ? 'animate-spin' : ''}`} />
+                {fetching ? 'Refreshing...' : 'Refresh'}
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleReset}
+                className="flex items-center gap-2 px-4 py-2 glass-card text-text-secondary text-sm hover:text-text-primary transition-colors"
+              >
+                Reset
+              </motion.button>
+            </div>
+          </div>
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 flex items-center gap-2 p-3 rounded-xl bg-accent-orange/10 border border-accent-orange/30 text-accent-orange text-sm"
+            >
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{error}</span>
+            </motion.div>
+          )}
+        </motion.div>
+
+        <div className="mb-8">
+          <TeamSelector
+            teams={teams}
+            selected={selectedTeams}
+            onToggle={handleToggleTeam}
+            onRun={handleRunAnalysis}
+            isRunning={isRunning}
+          />
+        </div>
+
+        <AnimatePresence>
+          {algoResult && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-8 overflow-hidden"
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <Target className="w-5 h-5 text-accent-green" />
+                <h2 className="text-xl sm:text-2xl font-bold text-text-primary">
+                  Qualification Analysis
+                </h2>
+              </div>
+              <ScenarioResults
+                result={algoResult}
+                onViewAll={handleViewAllScenarios}
+                getTeamById={getTeamById}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <PointsTable
+                teams={sortedTeams}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-text-primary mb-4">
+                Upcoming Matches
+              </h2>
+
+              {matches.length === 0 ? (
+                <div className="glass-card p-8 text-center">
+                  <p className="text-text-secondary">No remaining matches found</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {matches.map((match) => {
+                    const team1 = getTeamById(match.team1);
+                    const team2 = getTeamById(match.team2);
+                    if (!team1 || !team2) return null;
+                    const matchKey = [match.team1, match.team2].sort().join('-');
+                    return (
+                      <MatchCard
+                        key={match.id}
+                        match={match}
+                        team1={team1}
+                        team2={team2}
+                        winner={matchPredictions[matchKey]}
+                        onSelectWinner={handleSelectWinner}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </motion.div>
+          </div>
+
+          <div className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-text-primary mb-4">
+                Qualification Probability
+              </h2>
+              <div className="space-y-3">
+                {probabilities.length === 0 ? (
+                  <div className="glass-card p-6 text-center text-text-secondary">
+                    Select match winners to see probabilities
+                  </div>
+                ) : (
+                  probabilities.map((team, index) => (
+                    <ProbabilityBar
+                      key={team.id}
+                      team={{
+                        ...team,
+                        logo: getTeamById(team.id)?.logo,
+                      }}
+                      index={index}
+                    />
+                  ))
+                )}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-text-primary mb-4 flex items-center gap-2">
+                <Lightbulb className="w-5 h-5 text-accent-gold" />
+                Scenario Insights
+              </h2>
+              <div className="glass-card p-5 space-y-4">
+                {insights.length === 0 ? (
+                  <p className="text-sm text-text-secondary">
+                    Start predicting to see insights
+                  </p>
+                ) : (
+                  insights.map((insight, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.5 + index * 0.1 }}
+                      className="flex gap-3"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-accent-gold mt-2 flex-shrink-0"></div>
+                      <p className="text-sm text-text-secondary">{insight}</p>
+                    </motion.div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const getFallbackTeams = () => [
+  { id: 'rcb', shortName: 'RCB', name: 'Royal Challengers Bengaluru', color: '#ec1c24', logo: '🔴', played: 13, won: 9, lost: 4, noResult: 0, points: 18, nrr: 1.065 },
+  { id: 'gt', shortName: 'GT', name: 'Gujarat Titans', color: '#1c2841', logo: '🟡', played: 13, won: 8, lost: 5, noResult: 0, points: 16, nrr: 0.4 },
+  { id: 'srh', shortName: 'SRH', name: 'Sunrisers Hyderabad', color: '#f7a721', logo: '☀️', played: 13, won: 8, lost: 5, noResult: 0, points: 16, nrr: 0.35 },
+  { id: 'pbks', shortName: 'PBKS', name: 'Punjab Kings', color: '#dd1f2d', logo: '🔶', played: 13, won: 6, lost: 6, noResult: 1, points: 13, nrr: 0.227 },
+  { id: 'rr', shortName: 'RR', name: 'Rajasthan Royals', color: '#ea1a85', logo: '👑', played: 12, won: 6, lost: 6, noResult: 0, points: 12, nrr: 0.027 },
+  { id: 'csk', shortName: 'CSK', name: 'Chennai Super Kings', color: '#fdb913', logo: '🦁', played: 13, won: 6, lost: 7, noResult: 0, points: 12, nrr: -0.016 },
+  { id: 'dc', shortName: 'DC', name: 'Delhi Capitals', color: '#004c93', logo: '🏛️', played: 13, won: 6, lost: 7, noResult: 0, points: 12, nrr: -0.871 },
+  { id: 'kkr', shortName: 'KKR', name: 'Kolkata Knight Riders', color: '#3a225d', logo: '🟣', played: 12, won: 5, lost: 6, noResult: 1, points: 11, nrr: -0.038 },
+  { id: 'mi', shortName: 'MI', name: 'Mumbai Indians', color: '#004ba0', logo: '🔵', played: 12, won: 4, lost: 8, noResult: 0, points: 8, nrr: -0.504 },
+  { id: 'lsg', shortName: 'LSG', name: 'Lucknow Super Giants', color: '#00b2e3', logo: '⚡', played: 12, won: 4, lost: 8, noResult: 0, points: 8, nrr: -0.701 },
+];
+
+const getFallbackMatches = () => [
+  { id: 1, team1: 'rr', team2: 'csk', date: '2026-05-20', venue: 'Sawai Mansingh Stadium' },
+  { id: 2, team1: 'kkr', team2: 'mi', date: '2026-05-21', venue: 'Eden Gardens' },
+  { id: 3, team1: 'lsg', team2: 'dc', date: '2026-05-22', venue: 'BRSABV Ekana Stadium' },
+  { id: 4, team1: 'rcb', team2: 'gt', date: '2026-05-23', venue: 'M Chinnaswamy Stadium' },
+  { id: 5, team1: 'srh', team2: 'pbks', date: '2026-05-24', venue: 'Rajiv Gandhi Stadium' },
+  { id: 6, team1: 'mi', team2: 'rr', date: '2026-05-25', venue: 'Wankhede Stadium' },
+];
+
+export default Predictor;
