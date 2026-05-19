@@ -116,37 +116,6 @@ npm run build
 
 Output is generated in the `dist/` directory, ready for deployment.
 
-## Deployment
-
-### Vercel (Recommended)
-
-```bash
-npm i -g vercel
-vercel
-```
-
-### Netlify
-
-```bash
-npm run build
-npx netlify deploy --prod --dir=dist
-```
-
-### GitHub Pages
-
-Add to `vite.config.js`:
-```js
-export default defineConfig({
-  base: '/ipl_qualifiers/',
-  plugins: [react()],
-})
-```
-
-Then deploy:
-```bash
-npm run build
-npx gh-pages -d dist
-```
 
 ## How It Works
 
