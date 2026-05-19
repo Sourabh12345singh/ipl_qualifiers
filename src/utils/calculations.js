@@ -1,88 +1,126 @@
-export const calculateProbabilities = (teams, matchPredictions) => {
-  const updatedTeams = teams.map((team) => {
+export const getPredictedTable = (teams, matches, matchPredictions) => {
+  const predicted = teams.map((team) => {
     let points = team.points;
+    let played = team.played;
+    let won = team.won;
+    let lost = team.lost;
+    let remainingMatches = 0;
 
-    Object.entries(matchPredictions).forEach(([, winner]) => {
-      if (winner === team.id) {
-        points += 2;
+    matches.forEach((match) => {
+      const matchKey = [match.team1, match.team2].sort().join('-');
+      const winner = matchPredictions[matchKey];
+
+      if (match.team1 === team.id || match.team2 === team.id) {
+        if (winner) {
+          played += 1;
+          if (winner === team.id) {
+            won += 1;
+            points += 2;
+          } else {
+            lost += 1;
+          }
+        } else {
+          remainingMatches += 1;
+        }
       }
     });
 
-    return { ...team, points };
+    return {
+      ...team,
+      predictedPoints: points,
+      predictedPlayed: played,
+      predictedWon: won,
+      predictedLost: lost,
+      remainingMatches,
+      maxPossiblePoints: points + remainingMatches * 2,
+    };
   });
 
-  const sortedTeams = [...updatedTeams].sort((a, b) => {
-    if (b.points !== a.points) return b.points - a.points;
+  const sorted = [...predicted].sort((a, b) => {
+    if (b.predictedPoints !== a.predictedPoints) return b.predictedPoints - a.predictedPoints;
     return b.nrr - a.nrr;
   });
 
-  const cutoffPoints = sortedTeams.length >= 4 ? sortedTeams[3].points : 0;
+  return sorted.map((team, index) => ({
+    ...team,
+    predictedRank: index + 1,
+    isQualified: index < 4,
+  }));
+};
 
-  const probabilities = teams.map((team) => {
-    const currentPoints = team.points;
-    const maxPossiblePoints = currentPoints + 4;
-    const teamRank = sortedTeams.findIndex((t) => t.id === team.id);
-    const isInTop4 = teamRank < 4;
+export const calculateQualificationStatus = (teams, matches, matchPredictions) => {
+  const predicted = getPredictedTable(teams, matches, matchPredictions);
+  const cutoffPoints = predicted.length >= 4 ? predicted[3].predictedPoints : 0;
 
-    let probability;
-    if (isInTop4) {
-      const buffer = currentPoints - cutoffPoints;
-      probability = 70 + Math.min(25, buffer * 10) + Math.random() * 5;
-    } else if (maxPossiblePoints >= cutoffPoints) {
-      const gap = cutoffPoints - currentPoints;
-      probability = Math.max(15, 50 - gap * 12) + Math.random() * 10;
+  return predicted.map((team) => {
+    let status;
+    if (team.predictedPoints > cutoffPoints) {
+      status = 'qualified';
+    } else if (team.predictedPoints === cutoffPoints && team.isQualified) {
+      status = 'qualified';
+    } else if (team.maxPossiblePoints < cutoffPoints) {
+      status = 'eliminated';
     } else {
-      probability = Math.random() * 15;
+      status = 'contending';
     }
+
+    const pointsNeeded = team.predictedPoints < cutoffPoints
+      ? cutoffPoints - team.predictedPoints + 2
+      : 0;
 
     return {
       id: team.id,
       name: team.shortName,
       color: team.color,
-      probability: Math.min(99, Math.max(1, probability)),
+      logo: team.logo,
+      predictedPoints: team.predictedPoints,
+      currentPoints: team.points,
+      predictedRank: team.predictedRank,
+      status,
+      pointsNeeded,
+      remainingMatches: team.remainingMatches,
+      nrr: team.nrr,
     };
-  });
-
-  return probabilities.sort((a, b) => b.probability - a.probability);
+  }).sort((a, b) => a.predictedRank - b.predictedRank);
 };
 
-export const generateInsights = (teams, matchPredictions) => {
+export const generateInsights = (teams, matches, matchPredictions) => {
   const insights = [];
-  const sortedTeams = [...teams].sort((a, b) => {
-    if (b.points !== a.points) return b.points - a.points;
-    return b.nrr - a.nrr;
-  });
+  const predicted = getPredictedTable(teams, matches, matchPredictions);
+  const cutoffPoints = predicted.length >= 4 ? predicted[3].predictedPoints : 0;
 
-  if (sortedTeams.length === 0) return insights;
+  const topTeam = predicted[0];
+  const fourthTeam = predicted[3];
+  const fifthTeam = predicted[4];
 
-  const topTeam = sortedTeams[0];
-  const fourthTeam = sortedTeams[3];
-  const fifthTeam = sortedTeams[4];
+  const predictedCount = Object.values(matchPredictions).filter(Boolean).length;
 
-  insights.push(
-    `${topTeam.shortName} leads the table with ${topTeam.points} points and a strong NRR of ${topTeam.nrr > 0 ? '+' : ''}${topTeam.nrr}`
-  );
-
-  if (fourthTeam) {
-    insights.push(
-      `${fourthTeam.shortName} currently holds the 4th playoff spot with ${fourthTeam.points} points`
-    );
-  }
-
-  if (fifthTeam && fourthTeam) {
-    const pointsGap = fourthTeam.points - fifthTeam.points;
-    insights.push(
-      `${fifthTeam.shortName} needs to gain ${pointsGap + 2} points to overtake ${fourthTeam.shortName} for the final playoff spot`
-    );
-  }
-
-  const predictedMatches = Object.keys(matchPredictions).length;
-  if (predictedMatches > 0) {
-    insights.push(
-      `You've predicted ${predictedMatches} match${predictedMatches > 1 ? 'es' : ''}`
-    );
+  if (predictedCount === 0) {
+    insights.push('Select match winners to see predicted standings');
+    insights.push(`${topTeam.shortName} currently leads with ${topTeam.points} points`);
+    if (fourthTeam) {
+      insights.push(`${fourthTeam.shortName} holds the 4th spot with ${fourthTeam.points} points`);
+    }
   } else {
-    insights.push('Select match winners to see updated qualification probabilities');
+    insights.push(`${topTeam.shortName} projected at #1 with ${topTeam.predictedPoints} points`);
+
+    if (fourthTeam) {
+      insights.push(`${fourthTeam.shortName} projected in 4th with ${fourthTeam.predictedPoints} points`);
+    }
+
+    if (fifthTeam && fourthTeam) {
+      const gap = fourthTeam.predictedPoints - fifthTeam.predictedPoints;
+      if (gap > 0) {
+        insights.push(`${fifthTeam.shortName} trails by ${gap} points from playoff spot`);
+      } else {
+        insights.push(`${fifthTeam.shortName} tied on points with 4th place — NRR decides`);
+      }
+    }
+
+    const qualified = predicted.filter((t) => t.predictedRank <= 4);
+    insights.push(`Projected playoff teams: ${qualified.map((t) => t.shortName).join(', ')}`);
+
+    insights.push(`${predictedCount}/${matches.length} matches predicted`);
   }
 
   return insights;

@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lightbulb, RefreshCw, AlertCircle, Target, Clock } from 'lucide-react';
+import { Lightbulb, RefreshCw, Target, Clock, TrendingUp } from 'lucide-react';
 import { teamMeta } from '../data/teams';
 import { fetchIPLData, getLastUpdated, forceRefresh } from '../utils/iplData';
-import { calculateProbabilities, generateInsights, sortTeams } from '../utils/calculations';
+import { getPredictedTable, calculateQualificationStatus, generateInsights, sortTeams } from '../utils/calculations';
 import { findQualificationScenarios } from '../utils/algo';
 import PointsTable from '../components/PointsTable';
 import MatchCard from '../components/MatchCard';
-import ProbabilityBar from '../components/ProbabilityBar';
 import TeamSelector from '../components/TeamSelector';
 import ScenarioResults from '../components/ScenarioResults';
 
@@ -66,6 +65,7 @@ const Predictor = () => {
       ...prev,
       [matchKey]: prev[matchKey] === winnerId ? null : winnerId,
     }));
+    setAlgoResult(null);
   };
 
   const handleReset = () => {
@@ -115,11 +115,14 @@ const Predictor = () => {
     setRefreshing(false);
   };
 
-  const probabilities = teams.length > 0 ? calculateProbabilities(teams, matchPredictions) : [];
-  const insights = teams.length > 0 ? generateInsights(teams, matchPredictions) : [];
+  const predictedTable = getPredictedTable(teams, matches, matchPredictions);
+  const qualStatus = calculateQualificationStatus(teams, matches, matchPredictions);
+  const insights = generateInsights(teams, matches, matchPredictions);
   const sortedTeams = sortTeams(teams, sortBy);
 
   const getTeamById = (id) => teams.find((t) => t.id === id);
+
+  const predictedCount = Object.values(matchPredictions).filter(Boolean).length;
 
   return (
     <div className="min-h-screen bg-gradient-hero pt-24 pb-20 px-4 sm:px-6 lg:px-8">
@@ -136,12 +139,12 @@ const Predictor = () => {
               </h1>
               <div className="flex items-center gap-3">
                 <p className="text-text-secondary">
-                  IPL standings &amp; qualification analysis
+                  Select match winners to predict playoff qualification
                 </p>
                 {lastUpdated && (
                   <span className="flex items-center gap-1 text-xs text-text-muted">
                     <Clock className="w-3 h-3" />
-                    Updated {lastUpdated}
+                    {lastUpdated}
                   </span>
                 )}
               </div>
@@ -155,7 +158,7 @@ const Predictor = () => {
                 className="flex items-center gap-2 px-4 py-2 glass-card text-text-secondary text-sm hover:text-text-primary transition-colors disabled:opacity-50"
               >
                 <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                {refreshing ? 'Refreshing...' : 'Refresh'}
+                Refresh
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -258,26 +261,81 @@ const Predictor = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <h2 className="text-xl sm:text-2xl font-bold text-text-primary mb-4">
-                Qualification Probability
-              </h2>
-              <div className="space-y-3">
-                {probabilities.length === 0 ? (
-                  <div className="glass-card p-6 text-center text-text-secondary">
-                    Select match winners to see probabilities
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp className="w-5 h-5 text-accent-green" />
+                <h2 className="text-xl sm:text-2xl font-bold text-text-primary">
+                  Predicted Standings
+                </h2>
+              </div>
+
+              <div className="glass-card overflow-hidden">
+                <div className="p-4 border-b border-border-glass">
+                  <p className="text-sm text-text-secondary">
+                    {predictedCount > 0
+                      ? `${predictedCount}/${matches.length} matches predicted`
+                      : 'Select winners above'}
+                  </p>
+                </div>
+
+                <div className="divide-y divide-border-glass/50">
+                  {predictedTable.map((team, index) => {
+                    const isPlayoff = index < 4;
+                    const pointsChanged = team.predictedPoints !== team.points;
+                    return (
+                      <motion.div
+                        key={team.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className={`flex items-center gap-3 p-3 transition-colors ${
+                          isPlayoff ? 'bg-accent-green/5' : ''
+                        }`}
+                      >
+                        <div
+                          className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+                            isPlayoff
+                              ? 'bg-accent-green/20 text-accent-green'
+                              : 'bg-bg-card text-text-muted'
+                          }`}
+                        >
+                          {index + 1}
+                        </div>
+
+                        <div
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-lg flex-shrink-0"
+                          style={{ backgroundColor: `${team.color}30` }}
+                        >
+                          {team.logo}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-text-primary text-sm truncate">
+                            {team.shortName}
+                          </p>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="font-mono font-bold text-text-primary text-sm">
+                            {team.predictedPoints}
+                          </p>
+                          {pointsChanged && (
+                            <p className="text-xs text-accent-green">
+                              {team.predictedPoints > team.points ? '+' : ''}
+                              {team.predictedPoints - team.points}
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                <div className="p-3 border-t border-border-glass">
+                  <div className="flex items-center gap-2 text-xs text-text-muted">
+                    <div className="w-3 h-3 rounded-full bg-accent-green/30 border border-accent-green"></div>
+                    <span>Playoff Zone</span>
                   </div>
-                ) : (
-                  probabilities.map((team, index) => (
-                    <ProbabilityBar
-                      key={team.id}
-                      team={{
-                        ...team,
-                        logo: getTeamById(team.id)?.logo,
-                      }}
-                      index={index}
-                    />
-                  ))
-                )}
+                </div>
               </div>
             </motion.div>
 
@@ -288,27 +346,21 @@ const Predictor = () => {
             >
               <h2 className="text-xl sm:text-2xl font-bold text-text-primary mb-4 flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-accent-gold" />
-                Scenario Insights
+                Insights
               </h2>
               <div className="glass-card p-5 space-y-4">
-                {insights.length === 0 ? (
-                  <p className="text-sm text-text-secondary">
-                    Start predicting to see insights
-                  </p>
-                ) : (
-                  insights.map((insight, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.5 + index * 0.1 }}
-                      className="flex gap-3"
-                    >
-                      <div className="w-2 h-2 rounded-full bg-accent-gold mt-2 flex-shrink-0"></div>
-                      <p className="text-sm text-text-secondary">{insight}</p>
-                    </motion.div>
-                  ))
-                )}
+                {insights.map((insight, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + index * 0.1 }}
+                    className="flex gap-3"
+                  >
+                    <div className="w-2 h-2 rounded-full bg-accent-gold mt-2 flex-shrink-0"></div>
+                    <p className="text-sm text-text-secondary">{insight}</p>
+                  </motion.div>
+                ))}
               </div>
             </motion.div>
           </div>
