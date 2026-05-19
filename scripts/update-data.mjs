@@ -17,6 +17,26 @@ const SERIES_API_URL = `https://api.cricapi.com/v1/series_info?apikey=${API_KEY}
 
 const RETRY_DELAYS = [5000, 15000, 30000];
 
+const TEAM_MAP = {
+  'Royal Challengers Bengaluru': 'RCB',
+  'Chennai Super Kings': 'CSK',
+  'Mumbai Indians': 'MI',
+  'Delhi Capitals': 'DC',
+  'Kolkata Knight Riders': 'KKR',
+  'Rajasthan Royals': 'RR',
+  'Sunrisers Hyderabad': 'SRH',
+  'Lucknow Super Giants': 'LSG',
+  'Punjab Kings': 'PBKS',
+  'Gujarat Titans': 'GT',
+};
+
+function normalizeTeamName(name) {
+  if (!name) return '';
+  const trimmed = name.trim();
+  if (TEAM_MAP[trimmed]) return TEAM_MAP[trimmed];
+  return trimmed;
+}
+
 async function fetchWithRetry(url, retries = 0) {
   try {
     const res = await fetch(url);
@@ -74,23 +94,49 @@ async function fetchCompletedMatches() {
   const data = await fetchWithRetry(SERIES_API_URL);
 
   if (!data.data || !data.data.matches || !Array.isArray(data.data.matches)) {
-    console.log('No completed matches data from CricAPI');
+    console.log('No matches data from CricAPI');
     return [];
   }
 
   const completed = data.data.matches
-    .filter((m) => m.matchStatus?.toLowerCase().includes('won') || m.matchStatus?.toLowerCase().includes('completed'))
-    .map((m) => ({
-      matchNumber: m.matchNumber || m.match || 0,
-      team1: m.teams?.[0] || '',
-      team2: m.teams?.[1] || '',
-      date: m.date || '',
-      venue: m.venue || '',
-      winner: m.winner || '',
-      result: m.matchStatus || '',
-      team1Score: m.score?.[0] || '',
-      team2Score: m.score?.[1] || '',
-    }));
+    .filter((m) => {
+      const status = (m.status || '').toLowerCase();
+      return status.includes('won') || status.includes('completed') || status.includes('tied') || status.includes('no result');
+    })
+    .map((m) => {
+      const teams = m.teams || [];
+      const team1Full = teams[0] || '';
+      const team2Full = teams[1] || '';
+      const team1Short = normalizeTeamName(team1Full);
+      const team2Short = normalizeTeamName(team2Full);
+
+      const status = m.status || '';
+      let winner = '';
+      if (status.toLowerCase().includes('won')) {
+        const winnerMatch = status.match(/^(.+?)\s+won\b/i);
+        if (winnerMatch) {
+          winner = normalizeTeamName(winnerMatch[1]);
+        }
+      }
+
+      const scores = m.score || [];
+      const team1Score = scores[0] || '';
+      const team2Score = scores[1] || '';
+
+      return {
+        matchNumber: m.matchNumber || m.match || 0,
+        team1: team1Short,
+        team2: team2Short,
+        team1Full,
+        team2Full,
+        date: m.date || '',
+        venue: m.venue || '',
+        winner,
+        result: status,
+        team1Score,
+        team2Score,
+      };
+    });
 
   console.log(`Got ${completed.length} completed matches from CricAPI`);
   return completed;
@@ -109,7 +155,9 @@ function classifyMatches(schedule, completedFromAPI) {
   const completedMap = new Map();
   completedFromAPI.forEach((m) => {
     const key = `${m.team1}-${m.team2}-${m.date}`;
+    const reverseKey = `${m.team2}-${m.team1}-${m.date}`;
     completedMap.set(key, m);
+    completedMap.set(reverseKey, m);
   });
 
   const completed = [];
@@ -119,7 +167,8 @@ function classifyMatches(schedule, completedFromAPI) {
     const matchStart = new Date(`${match.date}T${match.time}+05:30`).getTime();
     const isCompleted = (now - matchStart) > fourHoursMs;
 
-    const apiMatch = completedMap.get(`${match.team1}-${match.team2}-${match.date}`);
+    const key = `${match.team1}-${match.team2}-${match.date}`;
+    const apiMatch = completedMap.get(key);
 
     if (isCompleted || apiMatch) {
       completed.push({
@@ -245,6 +294,14 @@ async function main() {
     console.log(`\nTop 4: ${topTeams}`);
     console.log(`Completed matches: ${completed.length}`);
     console.log(`Remaining matches: ${remaining.length}`);
+
+    if (completed.length > 0) {
+      console.log('\nSample completed match:');
+      const sample = completed[completed.length - 1];
+      console.log(`  ${sample.team1} vs ${sample.team2}`);
+      console.log(`  Result: ${sample.result}`);
+      console.log(`  Winner: ${sample.winner}`);
+    }
   } catch (error) {
     console.error('Failed to update IPL data:', error.message);
     console.log('Keeping existing data unchanged');
