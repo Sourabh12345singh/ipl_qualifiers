@@ -40,7 +40,12 @@
 | Animations | Framer Motion |
 | Icons | Lucide React |
 | Routing | React Router DOM |
-| Data | LocalStorage cache (12hr TTL) |
+### Data
+
+| Category | Technology |
+|---|---|
+| Auto-Update | Grok API (x.ai) via GitHub Actions |
+| Caching | LocalStorage (12hr TTL) |
 
 ## Project Structure
 
@@ -125,7 +130,7 @@ Output is generated in the `dist/` directory, ready for deployment.
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
 │   LocalStorage  │────▶│  Data Formatter  │────▶│  Points Table   │
 │   (12hr cache)  │     │  (teams/matches) │     │  (sorted)       │
-└─────────────────┘     └──────────────────┘     └────────┬────────┘
+└─────────────────┘     └──────────────────┘     └────────────────┘
                                                           │
 ┌─────────────────┐     ┌──────────────────┐     ┌────────▼────────┐
 │   DFS Algorithm │◀────│  Match Selection │◀────│  User Picks     │
@@ -138,6 +143,21 @@ Output is generated in the `dist/` directory, ready for deployment.
 │   (1-3 inline)  │     │  (all scenarios) │
 └─────────────────┘     └──────────────────┘
 ```
+
+### Automated Data Updates
+
+A GitHub Actions workflow runs every 12 hours to fetch fresh IPL standings and remaining matches via the Grok API (x.ai).
+
+**Setup:**
+1. Go to **Settings → Secrets and variables → Actions → New repository secret**
+2. Add:
+   ```
+   Name:  GROK_API_KEY
+   Value: your-grok-api-key
+   ```
+3. The workflow auto-updates `src/utils/iplData.js` and triggers a redeploy
+
+**Manual trigger:** Go to **Actions → Update IPL Data → Run workflow**
 
 ### Caching Strategy
 

@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -7,9 +6,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = join(__dirname, '..');
 
-const API_KEY = process.env.GEMINI_API_KEY;
+const API_KEY = process.env.GROK_API_KEY;
 if (!API_KEY) {
-  console.error('ERROR: GEMINI_API_KEY environment variable is not set');
+  console.error('ERROR: GROK_API_KEY environment variable is not set');
   process.exit(1);
 }
 
@@ -25,14 +24,33 @@ Raw JSON only. No markdown.`;
 
 const RETRY_DELAYS = [5000, 15000, 30000];
 
-async function callGemini(prompt, retries = 0) {
-  const genAI = new GoogleGenerativeAI(API_KEY);
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
+async function callGrok(prompt, retries = 0) {
   try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    const res = await fetch('https://api.x.ai/v1/responses', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'grok-4-fast-reasoning',
+        input: prompt,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      if (res.status === 429 && retries < RETRY_DELAYS.length) {
+        const delay = RETRY_DELAYS[retries];
+        console.log(`Rate limited. Waiting ${delay / 1000}s before retry ${retries + 1}/${RETRY_DELAYS.length}...`);
+        await new Promise((r) => setTimeout(r, delay));
+        return callGrok(prompt, retries + 1);
+      }
+      throw new Error(`Grok API error ${res.status}: ${err}`);
+    }
+
+    const data = await res.json();
+    const text = data.output?.[0]?.content?.[0]?.text || '';
 
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
@@ -45,7 +63,7 @@ async function callGemini(prompt, retries = 0) {
       const delay = RETRY_DELAYS[retries];
       console.log(`Rate limited. Waiting ${delay / 1000}s before retry ${retries + 1}/${RETRY_DELAYS.length}...`);
       await new Promise((r) => setTimeout(r, delay));
-      return callGemini(prompt, retries + 1);
+      return callGrok(prompt, retries + 1);
     }
     throw error;
   }
@@ -53,7 +71,7 @@ async function callGemini(prompt, retries = 0) {
 
 async function fetchPointsTable() {
   console.log('Fetching points table...');
-  const data = await callGemini(POINTS_TABLE_PROMPT);
+  const data = await callGrok(POINTS_TABLE_PROMPT);
   if (!Array.isArray(data) || data.length === 0) {
     throw new Error('Invalid points table response');
   }
@@ -63,7 +81,7 @@ async function fetchPointsTable() {
 
 async function fetchRemainingMatches() {
   console.log('Fetching remaining matches...');
-  const data = await callGemini(REMAINING_MATCHES_PROMPT);
+  const data = await callGrok(REMAINING_MATCHES_PROMPT);
   if (!Array.isArray(data)) {
     throw new Error('Invalid remaining matches response');
   }
