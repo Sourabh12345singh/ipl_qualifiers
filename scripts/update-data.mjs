@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { readFileSync, writeFileSync } from 'fs';
+import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -13,80 +13,67 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-const PROMPT = `Give me the latest Indian Premier League (IPL) points table and remaining matches for the current IPL season in VALID JSON format only.
+const POINTS_TABLE_PROMPT = `Return IPL 2026 points table as JSON array.
+Fields: team, short, played, won, lost, noResult, points, nrr.
+All 10 teams. Sort by points DESC then NRR DESC.
+Raw JSON only. No markdown.`;
 
-Return ONLY a raw JSON object with this exact structure. No markdown, no explanation, no code blocks.
+const REMAINING_MATCHES_PROMPT = `Return remaining IPL 2026 league matches as JSON array.
+Fields: id, team1, team2, date, venue.
+Exclude completed/playoff matches. Sort by date.
+Raw JSON only. No markdown.`;
 
-{
-  "pointsTable": [
-    {
-      "team": "Royal Challengers Bengaluru",
-      "short": "RCB",
-      "played": 13,
-      "won": 9,
-      "lost": 4,
-      "noResult": 0,
-      "points": 18,
-      "nrr": 1.065
-    }
-  ],
-  "remainingMatches": [
-    {
-      "id": 1,
-      "team1": "RR",
-      "team2": "CSK",
-      "date": "2026-05-20",
-      "venue": "Sawai Mansingh Stadium"
-    }
-  ]
-}
+const RETRY_DELAYS = [5000, 15000, 30000];
 
-Rules:
-- Use official latest IPL standings
-- Use correct Net Run Rate values
-- Include all 10 teams in pointsTable
-- Include ONLY remaining league-stage matches in remainingMatches
-- Exclude completed matches, playoffs, and final
-- Use team short names: RCB, CSK, MI, GT, RR, SRH, KKR, PBKS, DC, LSG
-- Keep date format as YYYY-MM-DD
-- Keep all numeric values as numbers (not strings)
-- Ensure JSON is valid and parseable
-- Sort pointsTable by points DESC, then NRR DESC
-- Sort remainingMatches chronologically`;
-
-async function fetchIPLData() {
-  console.log('Fetching IPL data from Gemini API...');
-
+async function callGemini(prompt, retries = 0) {
   const genAI = new GoogleGenerativeAI(API_KEY);
   const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
-  const result = await model.generateContent(PROMPT);
-  const response = await result.response;
-  const text = response.text();
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-  console.log('Raw response length:', text.length);
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) {
+      throw new Error('No valid JSON array found in response');
+    }
 
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error('No valid JSON object found in Gemini response');
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    if (error.message.includes('429') && retries < RETRY_DELAYS.length) {
+      const delay = RETRY_DELAYS[retries];
+      console.log(`Rate limited. Waiting ${delay / 1000}s before retry ${retries + 1}/${RETRY_DELAYS.length}...`);
+      await new Promise((r) => setTimeout(r, delay));
+      return callGemini(prompt, retries + 1);
+    }
+    throw error;
   }
+}
 
-  const data = JSON.parse(jsonMatch[0]);
-
-  if (!data.pointsTable || !Array.isArray(data.pointsTable)) {
-    throw new Error('Response missing pointsTable array');
+async function fetchPointsTable() {
+  console.log('Fetching points table...');
+  const data = await callGemini(POINTS_TABLE_PROMPT);
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error('Invalid points table response');
   }
-  if (!data.remainingMatches || !Array.isArray(data.remainingMatches)) {
-    throw new Error('Response missing remainingMatches array');
-  }
-
-  console.log(`Parsed ${data.pointsTable.length} teams and ${data.remainingMatches.length} matches`);
+  console.log(`Got ${data.length} teams`);
   return data;
 }
 
-function generateIPLDataFile(data) {
-  const pointsTableJSON = JSON.stringify(data.pointsTable, null, 4);
-  const remainingMatchesJSON = JSON.stringify(data.remainingMatches, null, 4);
+async function fetchRemainingMatches() {
+  console.log('Fetching remaining matches...');
+  const data = await callGemini(REMAINING_MATCHES_PROMPT);
+  if (!Array.isArray(data)) {
+    throw new Error('Invalid remaining matches response');
+  }
+  console.log(`Got ${data.length} matches`);
+  return data;
+}
+
+function generateIPLDataFile(pointsTable, remainingMatches) {
+  const pointsTableJSON = JSON.stringify(pointsTable, null, 4);
+  const remainingMatchesJSON = JSON.stringify(remainingMatches, null, 4);
 
   return `const CACHE_KEY = 'ipl_data_cache';
 const CACHE_TIMESTAMP_KEY = 'ipl_data_timestamp';
@@ -154,16 +141,20 @@ export const forceRefresh = async () => {
 
 async function main() {
   try {
-    const data = await fetchIPLData();
-    const fileContent = generateIPLDataFile(data);
+    const [pointsTable, remainingMatches] = await Promise.all([
+      fetchPointsTable(),
+      fetchRemainingMatches(),
+    ]);
+
+    const fileContent = generateIPLDataFile(pointsTable, remainingMatches);
     const outputPath = join(ROOT, 'src', 'utils', 'iplData.js');
 
     writeFileSync(outputPath, fileContent, 'utf-8');
     console.log('Successfully updated src/utils/iplData.js');
 
-    const teams = data.pointsTable.map((t) => `${t.short}: ${t.points} pts`).join(', ');
-    console.log(`\nTop teams: ${teams}`);
-    console.log(`Remaining matches: ${data.remainingMatches.length}`);
+    const topTeams = pointsTable.slice(0, 4).map((t) => `${t.short}: ${t.points} pts`).join(', ');
+    console.log(`\nTop 4: ${topTeams}`);
+    console.log(`Remaining matches: ${remainingMatches.length}`);
   } catch (error) {
     console.error('Failed to update IPL data:', error.message);
     console.log('Keeping existing data unchanged');
