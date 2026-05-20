@@ -17,6 +17,8 @@ const defaultData = {
     { team: 'Lucknow Super Giants', short: 'LSG', played: 12, won: 4, lost: 8, noResult: 0, points: 8, nrr: -0.701 },
   ],
   completedMatches: [
+    
+    { id: 64, matchNumber: 64, team1: 'RR', team2: 'LSG', date: '2026-05-19', time: '19:30', venue: 'Sawai Mansingh Stadium', status: 'Completed', winner: '', team1Score: '', team2Score: '' },
     { id: 63, matchNumber: 63, team1: 'CSK', team2: 'SRH', date: '2026-05-18', time: '19:30', venue: 'MA Chidambaram Stadium', status: 'Completed', winner: '', team1Score: '', team2Score: '' },
     { id: 62, matchNumber: 62, team1: 'DC', team2: 'RR', date: '2026-05-17', time: '19:30', venue: 'Arun Jaitley Stadium', status: 'Completed', winner: '', team1Score: '', team2Score: '' },
     { id: 61, matchNumber: 61, team1: 'PBKS', team2: 'RCB', date: '2026-05-17', time: '15:30', venue: 'HPCA Stadium', status: 'Completed', winner: '', team1Score: '', team2Score: '' },
@@ -82,7 +84,6 @@ const defaultData = {
     { id: 1, matchNumber: 1, team1: 'RCB', team2: 'SRH', date: '2026-03-28', time: '19:30', venue: 'M Chinnaswamy Stadium', status: 'Completed', winner: '', team1Score: '', team2Score: '' },
   ],
   remainingMatches: [
-    { id: 64, matchNumber: 64, team1: 'RR', team2: 'LSG', date: '2026-05-19', time: '19:30', venue: 'Sawai Mansingh Stadium', status: 'Upcoming', winner: '', team1Score: '', team2Score: '' },
     { id: 65, matchNumber: 65, team1: 'KKR', team2: 'MI', date: '2026-05-20', time: '19:30', venue: 'Eden Gardens', status: 'Upcoming', winner: '', team1Score: '', team2Score: '' },
     { id: 66, matchNumber: 66, team1: 'GT', team2: 'CSK', date: '2026-05-21', time: '19:30', venue: 'Narendra Modi Stadium', status: 'Upcoming', winner: '', team1Score: '', team2Score: '' },
     { id: 67, matchNumber: 67, team1: 'SRH', team2: 'RCB', date: '2026-05-22', time: '19:30', venue: 'Rajiv Gandhi International Cricket Stadium', status: 'Upcoming', winner: '', team1Score: '', team2Score: '' },
