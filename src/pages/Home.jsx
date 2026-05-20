@@ -9,6 +9,7 @@ import TeamCard from '../components/TeamCard';
 const Home = () => {
   const [top4, setTop4] = useState(getFallbackTop4());
   const [lastUpdated, setLastUpdated] = useState('');
+  const [matchesLeft, setMatchesLeft] = useState(6);
 
   useEffect(() => {
     const loadData = async () => {
@@ -31,6 +32,7 @@ const Home = () => {
           nrr: t.nrr,
         }));
         setTop4(formatted);
+        setMatchesLeft(data.remainingMatches?.length || 0);
         setLastUpdated(getLastUpdated());
       } catch {
         console.log('Using cached standings');
@@ -41,7 +43,7 @@ const Home = () => {
 
   const stats = [
     { icon: Trophy, label: 'Teams', value: '10' },
-    { icon: TrendingUp, label: 'Matches Left', value: '6' },
+    { icon: TrendingUp, label: 'Matches Left', value: matchesLeft.toString() },
     { icon: Users, label: 'Playoff Spots', value: '4' },
     { icon: Zap, label: 'Predictions', value: '∞' },
   ];
@@ -181,7 +183,7 @@ const getFallbackTop4 = () => [
   { id: 'rcb', shortName: 'RCB', name: 'Royal Challengers Bengaluru', color: '#ec1c24', logo: '🔴', played: 13, won: 9, lost: 4, points: 18, nrr: 1.065 },
   { id: 'gt', shortName: 'GT', name: 'Gujarat Titans', color: '#1c2841', logo: '🟡', played: 13, won: 8, lost: 5, points: 16, nrr: 0.4 },
   { id: 'srh', shortName: 'SRH', name: 'Sunrisers Hyderabad', color: '#f7a721', logo: '☀️', played: 13, won: 8, lost: 5, points: 16, nrr: 0.35 },
-  { id: 'pbks', shortName: 'PBKS', name: 'Punjab Kings', color: '#dd1f2d', logo: '🔶', played: 13, won: 6, lost: 6, points: 13, nrr: 0.227 },
+  { id: 'rr', shortName: 'RR', name: 'Rajasthan Royals', color: '#ea1a85', logo: '👑', played: 13, won: 7, lost: 6, points: 14, nrr: 0.083 },
 ];
 
 export default Home;

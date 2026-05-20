@@ -8,7 +8,7 @@ const MatchCard = ({ match, team1, team2, winner, onSelectWinner }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.01 }}
+      whileHover={{ y: -2 }}
       className="glass-card p-4 sm:p-5 transition-all duration-300"
     >
       <div className="flex items-center justify-between mb-3 sm:mb-4">
@@ -16,20 +16,17 @@ const MatchCard = ({ match, team1, team2, winner, onSelectWinner }) => {
           <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span>{match.date}</span>
         </div>
-        <div className="flex items-center gap-1.5 text-text-muted text-xs sm:text-sm">
-          <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          <span className="hidden sm:inline">{match.venue}</span>
-        </div>
+        <span className="status-badge upcoming">Upcoming</span>
       </div>
 
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           onClick={() => onSelectWinner(matchKey, match.team1)}
           className={`flex-1 flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl transition-all duration-200 ${
             winner === match.team1
-              ? 'bg-accent-green/20 border-2 border-accent-green'
+              ? 'bg-accent-green/20 border-2 border-accent-green shadow-lg shadow-accent-green/10'
               : 'bg-bg-card hover:bg-bg-card-hover border-2 border-transparent'
           }`}
         >
@@ -54,12 +51,12 @@ const MatchCard = ({ match, team1, team2, winner, onSelectWinner }) => {
         </div>
 
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           onClick={() => onSelectWinner(matchKey, match.team2)}
           className={`flex-1 flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl transition-all duration-200 ${
             winner === match.team2
-              ? 'bg-accent-green/20 border-2 border-accent-green'
+              ? 'bg-accent-green/20 border-2 border-accent-green shadow-lg shadow-accent-green/10'
               : 'bg-bg-card hover:bg-bg-card-hover border-2 border-transparent'
           }`}
         >
@@ -78,6 +75,11 @@ const MatchCard = ({ match, team1, team2, winner, onSelectWinner }) => {
             </p>
           </div>
         </motion.button>
+      </div>
+
+      <div className="flex items-center justify-center gap-1.5 mt-3 text-text-muted text-xs">
+        <MapPin className="w-3 h-3" />
+        <span className="truncate">{match.venue}</span>
       </div>
     </motion.div>
   );

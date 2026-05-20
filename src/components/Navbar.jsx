@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Trophy, BarChart3, Menu, X } from 'lucide-react';
+import { Trophy, BarChart3, Menu, X, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { forceRefresh } from '../utils/iplData';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -13,6 +15,12 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await forceRefresh();
+    window.location.reload();
+  };
 
   const navLinks = [
     { path: '/', label: 'Home', icon: Trophy },
@@ -39,7 +47,7 @@ const Navbar = () => {
             >
               <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </motion.div>
-            <span className="text-lg sm:text-xl font-bold gradient-text">IPL Predictor</span>
+            <span className="text-lg sm:text-xl font-bold gradient-text hidden sm:inline">IPL Predictor</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-1">
@@ -63,18 +71,37 @@ const Navbar = () => {
                 </Link>
               );
             })}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-bg-card transition-all duration-200 disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              <span className="font-medium text-sm">Refresh</span>
+            </motion.button>
           </div>
 
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-bg-card transition-colors"
-          >
-            {mobileOpen ? (
-              <X className="w-5 h-5 text-text-primary" />
-            ) : (
-              <Menu className="w-5 h-5 text-text-primary" />
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="md:hidden p-2 rounded-lg hover:bg-bg-card transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-5 h-5 text-text-primary ${refreshing ? 'animate-spin' : ''}`} />
+            </button>
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="md:hidden p-2 rounded-lg hover:bg-bg-card transition-colors"
+            >
+              {mobileOpen ? (
+                <X className="w-5 h-5 text-text-primary" />
+              ) : (
+                <Menu className="w-5 h-5 text-text-primary" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 

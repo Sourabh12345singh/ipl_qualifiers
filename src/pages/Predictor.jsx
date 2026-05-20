@@ -418,21 +418,21 @@ const Predictor = () => {
 
 const getFallbackTeams = () => [
   { id: 'rcb', shortName: 'RCB', name: 'Royal Challengers Bengaluru', color: '#ec1c24', logo: '🔴', played: 13, won: 9, lost: 4, noResult: 0, points: 18, nrr: 1.065 },
-  { id: 'gt', shortName: 'GT', name: 'Gujarat Titans', color: '#1c2841', logo: '', played: 13, won: 8, lost: 5, noResult: 0, points: 16, nrr: 0.4 },
+  { id: 'gt', shortName: 'GT', name: 'Gujarat Titans', color: '#1c2841', logo: '🟡', played: 13, won: 8, lost: 5, noResult: 0, points: 16, nrr: 0.4 },
   { id: 'srh', shortName: 'SRH', name: 'Sunrisers Hyderabad', color: '#f7a721', logo: '☀️', played: 13, won: 8, lost: 5, noResult: 0, points: 16, nrr: 0.35 },
+  { id: 'rr', shortName: 'RR', name: 'Rajasthan Royals', color: '#ea1a85', logo: '👑', played: 13, won: 7, lost: 6, noResult: 0, points: 14, nrr: 0.083 },
   { id: 'pbks', shortName: 'PBKS', name: 'Punjab Kings', color: '#dd1f2d', logo: '🔶', played: 13, won: 6, lost: 6, noResult: 1, points: 13, nrr: 0.227 },
-  { id: 'rr', shortName: 'RR', name: 'Rajasthan Royals', color: '#ea1a85', logo: '👑', played: 12, won: 6, lost: 6, noResult: 0, points: 12, nrr: 0.027 },
   { id: 'csk', shortName: 'CSK', name: 'Chennai Super Kings', color: '#fdb913', logo: '🦁', played: 13, won: 6, lost: 7, noResult: 0, points: 12, nrr: -0.016 },
-  { id: 'dc', shortName: 'DC', name: 'Delhi Capitals', color: '#004c93', logo: '️', played: 13, won: 6, lost: 7, noResult: 0, points: 12, nrr: -0.871 },
+  { id: 'dc', shortName: 'DC', name: 'Delhi Capitals', color: '#004c93', logo: '🔵', played: 13, won: 6, lost: 7, noResult: 0, points: 12, nrr: -0.871 },
   { id: 'kkr', shortName: 'KKR', name: 'Kolkata Knight Riders', color: '#3a225d', logo: '🟣', played: 12, won: 5, lost: 6, noResult: 1, points: 11, nrr: -0.038 },
-  { id: 'mi', shortName: 'MI', name: 'Mumbai Indians', color: '#004ba0', logo: '', played: 12, won: 4, lost: 8, noResult: 0, points: 8, nrr: -0.504 },
-  { id: 'lsg', shortName: 'LSG', name: 'Lucknow Super Giants', color: '#00b2e3', logo: '⚡', played: 12, won: 4, lost: 8, noResult: 0, points: 8, nrr: -0.701 },
+  { id: 'mi', shortName: 'MI', name: 'Mumbai Indians', color: '#004ba0', logo: '🔷', played: 12, won: 4, lost: 8, noResult: 0, points: 8, nrr: -0.504 },
+  { id: 'lsg', shortName: 'LSG', name: 'Lucknow Super Giants', color: '#00b2e3', logo: '⚡', played: 13, won: 4, lost: 9, noResult: 0, points: 8, nrr: -0.702 },
 ];
 
 const getFallbackMatches = () => [
   { id: 65, team1: 'kkr', team2: 'mi', date: '2026-05-20', venue: 'Eden Gardens' },
   { id: 66, team1: 'gt', team2: 'csk', date: '2026-05-21', venue: 'Narendra Modi Stadium' },
-  { id: 67, team1: 'srh', team2: 'rcb', date: '2026-05-22', venue: 'Rajiv Gandhi Stadium' },
+  { id: 67, team1: 'srh', team2: 'rcb', date: '2026-05-22', venue: 'Rajiv Gandhi International Cricket Stadium' },
   { id: 68, team1: 'lsg', team2: 'pbks', date: '2026-05-23', venue: 'BRSABV Ekana Stadium' },
   { id: 69, team1: 'mi', team2: 'rr', date: '2026-05-24', venue: 'Wankhede Stadium' },
   { id: 70, team1: 'kkr', team2: 'dc', date: '2026-05-24', venue: 'Eden Gardens' },
