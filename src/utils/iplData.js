@@ -1,7 +1,3 @@
-const CACHE_KEY = 'ipl_data_cache';
-const CACHE_TIMESTAMP_KEY = 'ipl_data_timestamp';
-const REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000;
-
 const defaultData = {
   lastUpdated: '2026-05-20T01:30:00.000Z',
   pointsTable: [
@@ -92,59 +88,20 @@ const defaultData = {
   ],
 };
 
-const isCacheExpired = () => {
-  const ts = localStorage.getItem(CACHE_TIMESTAMP_KEY);
-  if (!ts) return true;
-  return Date.now() - parseInt(ts, 10) > REFRESH_INTERVAL_MS;
-};
-
-const getCachedData = () => {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
-
-const setCachedData = (data) => {
-  localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-  localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
-};
-
 export const fetchIPLData = async () => {
-  const cached = getCachedData();
-  if (cached && !isCacheExpired()) {
-    return cached;
-  }
-  setCachedData(defaultData);
   return defaultData;
 };
 
 export const fetchRemainingMatches = async () => {
-  const data = await fetchIPLData();
-  return data.remainingMatches;
+  return defaultData.remainingMatches;
 };
 
 export const fetchCompletedMatches = async () => {
-  const data = await fetchIPLData();
-  return data.completedMatches;
+  return defaultData.completedMatches;
 };
 
 export const getLastUpdated = () => {
-  const cached = getCachedData();
-  if (cached?.lastUpdated) {
-    const d = new Date(cached.lastUpdated);
-    return d.toLocaleString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
-  const ts = localStorage.getItem(CACHE_TIMESTAMP_KEY);
-  if (!ts) return 'Just now';
-  const d = new Date(parseInt(ts, 10));
+  const d = new Date(defaultData.lastUpdated);
   return d.toLocaleString('en-IN', {
     day: 'numeric',
     month: 'short',
@@ -154,18 +111,13 @@ export const getLastUpdated = () => {
 };
 
 export const forceRefresh = async () => {
-  localStorage.removeItem(CACHE_KEY);
-  localStorage.removeItem(CACHE_TIMESTAMP_KEY);
-  setCachedData(defaultData);
   return defaultData;
 };
 
 export const updateDataManually = (newData) => {
-  const merged = {
+  return {
     ...defaultData,
     ...newData,
     lastUpdated: newData.lastUpdated || new Date().toISOString(),
   };
-  setCachedData(merged);
-  return merged;
 };
