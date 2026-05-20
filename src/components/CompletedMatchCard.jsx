@@ -5,7 +5,7 @@ const CompletedMatchCard = ({ match }) => {
   const team1 = match.team1;
   const team2 = match.team2;
   const winner = match.winner;
-  const result = match.result;
+  const status = match.status;
   const team1Score = match.team1Score;
   const team2Score = match.team2Score;
 
@@ -54,9 +54,9 @@ const CompletedMatchCard = ({ match }) => {
         </div>
       </div>
 
-      {result && (
+      {status && (
         <p className="text-center text-xs text-accent-gold mt-2 font-medium">
-          {result}
+          {status}
         </p>
       )}
     </motion.div>

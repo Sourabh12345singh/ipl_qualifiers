@@ -61,10 +61,17 @@ const Predictor = () => {
         date: m.date,
         venue: m.venue,
         winner: m.winner,
-        result: m.result,
+        status: m.status,
         team1Score: m.team1Score,
         team2Score: m.team2Score,
       }));
+
+      formattedCompleted.sort((a, b) => {
+        const dateA = new Date(`${a.date}T19:30+05:30`).getTime();
+        const dateB = new Date(`${b.date}T19:30+05:30`).getTime();
+        return dateB - dateA;
+      });
+
       setCompletedMatches(formattedCompleted);
       setLastUpdated(getLastUpdated());
     } catch {

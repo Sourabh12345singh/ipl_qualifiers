@@ -33,8 +33,7 @@ const TEAM_MAP = {
 function normalizeTeamName(name) {
   if (!name) return '';
   const trimmed = name.trim();
-  if (TEAM_MAP[trimmed]) return TEAM_MAP[trimmed];
-  return trimmed;
+  return TEAM_MAP[trimmed] || trimmed;
 }
 
 async function fetchWithRetry(url, retries = 0) {
@@ -89,8 +88,8 @@ async function fetchPointsTable() {
   return teams;
 }
 
-async function fetchCompletedMatches() {
-  console.log('Fetching series info from CricAPI...');
+async function fetchMatchesFromAPI() {
+  console.log('Fetching matches from CricAPI...');
   const data = await fetchWithRetry(SERIES_API_URL);
 
   if (!data.data || !data.data.matches || !Array.isArray(data.data.matches)) {
@@ -98,48 +97,41 @@ async function fetchCompletedMatches() {
     return [];
   }
 
-  const completed = data.data.matches
-    .filter((m) => {
-      const status = (m.status || '').toLowerCase();
-      return status.includes('won') || status.includes('completed') || status.includes('tied') || status.includes('no result');
-    })
-    .map((m) => {
-      const teams = m.teams || [];
-      const team1Full = teams[0] || '';
-      const team2Full = teams[1] || '';
-      const team1Short = normalizeTeamName(team1Full);
-      const team2Short = normalizeTeamName(team2Full);
+  const matches = data.data.matches.map((m) => {
+    const teams = m.teams || [];
+    const team1Full = teams[0] || '';
+    const team2Full = teams[1] || '';
+    const team1Short = normalizeTeamName(team1Full);
+    const team2Short = normalizeTeamName(team2Full);
 
-      const status = m.status || '';
-      let winner = '';
-      if (status.toLowerCase().includes('won')) {
-        const winnerMatch = status.match(/^(.+?)\s+won\b/i);
-        if (winnerMatch) {
-          winner = normalizeTeamName(winnerMatch[1]);
-        }
+    const status = m.status || '';
+    let winner = '';
+    if (status.toLowerCase().includes('won')) {
+      const winnerMatch = status.match(/^(.+?)\s+won\b/i);
+      if (winnerMatch) {
+        winner = normalizeTeamName(winnerMatch[1]);
       }
+    }
 
-      const scores = m.score || [];
-      const team1Score = scores[0] || '';
-      const team2Score = scores[1] || '';
+    const scores = m.score || [];
 
-      return {
-        matchNumber: m.matchNumber || m.match || 0,
-        team1: team1Short,
-        team2: team2Short,
-        team1Full,
-        team2Full,
-        date: m.date || '',
-        venue: m.venue || '',
-        winner,
-        result: status,
-        team1Score,
-        team2Score,
-      };
-    });
+    return {
+      matchNumber: m.matchNumber || m.match || 0,
+      team1: team1Short,
+      team2: team2Short,
+      team1Full,
+      team2Full,
+      date: m.date || '',
+      venue: m.venue || '',
+      status,
+      winner,
+      team1Score: scores[0] || '',
+      team2Score: scores[1] || '',
+    };
+  });
 
-  console.log(`Got ${completed.length} completed matches from CricAPI`);
-  return completed;
+  console.log(`Got ${matches.length} matches from CricAPI`);
+  return matches;
 }
 
 function loadSchedule() {
@@ -148,16 +140,16 @@ function loadSchedule() {
   return JSON.parse(raw);
 }
 
-function classifyMatches(schedule, completedFromAPI) {
+function classifyMatches(schedule, apiMatches) {
   const now = Date.now();
   const fourHoursMs = 4 * 60 * 60 * 1000;
 
-  const completedMap = new Map();
-  completedFromAPI.forEach((m) => {
+  const apiMap = new Map();
+  apiMatches.forEach((m) => {
     const key = `${m.team1}-${m.team2}-${m.date}`;
     const reverseKey = `${m.team2}-${m.team1}-${m.date}`;
-    completedMap.set(key, m);
-    completedMap.set(reverseKey, m);
+    apiMap.set(key, m);
+    apiMap.set(reverseKey, m);
   });
 
   const completed = [];
@@ -168,31 +160,43 @@ function classifyMatches(schedule, completedFromAPI) {
     const isCompleted = (now - matchStart) > fourHoursMs;
 
     const key = `${match.team1}-${match.team2}-${match.date}`;
-    const apiMatch = completedMap.get(key);
+    const apiMatch = apiMap.get(key);
+
+    let status = 'Upcoming';
+    let winner = '';
+
+    if (apiMatch) {
+      status = apiMatch.status || 'Completed';
+      winner = apiMatch.winner || '';
+    } else if (isCompleted) {
+      status = 'Completed';
+    }
+
+    const matchData = {
+      id: match.id,
+      matchNumber: match.matchNumber,
+      team1: match.team1,
+      team2: match.team2,
+      date: match.date,
+      time: match.time,
+      venue: match.venue,
+      status,
+      winner,
+      team1Score: apiMatch?.team1Score || '',
+      team2Score: apiMatch?.team2Score || '',
+    };
 
     if (isCompleted || apiMatch) {
-      completed.push({
-        id: match.id,
-        matchNumber: match.matchNumber,
-        team1: match.team1,
-        team2: match.team2,
-        date: match.date,
-        venue: match.venue,
-        winner: apiMatch?.winner || '',
-        result: apiMatch?.result || 'Completed',
-        team1Score: apiMatch?.team1Score || '',
-        team2Score: apiMatch?.team2Score || '',
-      });
+      completed.push(matchData);
     } else {
-      remaining.push({
-        id: match.id,
-        matchNumber: match.matchNumber,
-        team1: match.team1,
-        team2: match.team2,
-        date: match.date,
-        venue: match.venue,
-      });
+      remaining.push(matchData);
     }
+  });
+
+  completed.sort((a, b) => {
+    const dateA = new Date(`${a.date}T${a.time || '19:30'}+05:30`).getTime();
+    const dateB = new Date(`${b.date}T${b.time || '19:30'}+05:30`).getTime();
+    return dateB - dateA;
   });
 
   console.log(`Classified: ${completed.length} completed, ${remaining.length} remaining`);
@@ -200,6 +204,7 @@ function classifyMatches(schedule, completedFromAPI) {
 }
 
 function generateIPLDataFile(pointsTable, completedMatches, remainingMatches) {
+  const lastUpdated = new Date().toISOString();
   const pointsJSON = JSON.stringify(pointsTable, null, 4);
   const completedJSON = JSON.stringify(completedMatches, null, 4);
   const remainingJSON = JSON.stringify(remainingMatches, null, 4);
@@ -209,6 +214,7 @@ const CACHE_TIMESTAMP_KEY = 'ipl_data_timestamp';
 const REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 const defaultData = {
+  lastUpdated: '${lastUpdated}',
   pointsTable: ${pointsJSON},
   completedMatches: ${completedJSON},
   remainingMatches: ${remainingJSON},
@@ -276,13 +282,13 @@ export const forceRefresh = async () => {
 
 async function main() {
   try {
-    const [pointsTable, completedFromAPI] = await Promise.all([
+    const [pointsTable, apiMatches] = await Promise.all([
       fetchPointsTable(),
-      fetchCompletedMatches(),
+      fetchMatchesFromAPI(),
     ]);
 
     const schedule = loadSchedule();
-    const { completed, remaining } = classifyMatches(schedule, completedFromAPI);
+    const { completed, remaining } = classifyMatches(schedule, apiMatches);
 
     const fileContent = generateIPLDataFile(pointsTable, completed, remaining);
     const outputPath = join(ROOT, 'src', 'utils', 'iplData.js');
@@ -296,10 +302,10 @@ async function main() {
     console.log(`Remaining matches: ${remaining.length}`);
 
     if (completed.length > 0) {
-      console.log('\nSample completed match:');
-      const sample = completed[completed.length - 1];
-      console.log(`  ${sample.team1} vs ${sample.team2}`);
-      console.log(`  Result: ${sample.result}`);
+      console.log('\nMost recent completed match:');
+      const sample = completed[0];
+      console.log(`  Match ${sample.matchNumber}: ${sample.team1} vs ${sample.team2}`);
+      console.log(`  Status: ${sample.status}`);
       console.log(`  Winner: ${sample.winner}`);
     }
   } catch (error) {
