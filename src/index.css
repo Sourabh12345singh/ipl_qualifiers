@@ -16,10 +16,15 @@ html {
 
 body {
   font-family: 'Outfit', system-ui, sans-serif;
-  background: #0a0a0f;
-  color: #ffffff;
+  background: #f6f8fc;
+  color: #1a2333;
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+html.theme-dark body {
+  background: #0a0a0f;
+  color: #ffffff;
 }
 
 #root {
@@ -79,18 +84,29 @@ body {
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(13, 33, 65, 0.12);
   border-radius: 16px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+html.theme-dark .glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .glass-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(13, 33, 65, 0.2);
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 24px rgba(39, 72, 124, 0.12);
+}
+
+html.theme-dark .glass-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.32);
 }
 
 .gradient-text {
@@ -122,7 +138,70 @@ body {
 }
 
 .bg-gradient-hero {
+  background: linear-gradient(135deg, #f6f8fc 0%, #edf3ff 50%, #e6f0ff 100%);
+}
+
+html.theme-dark .bg-gradient-hero {
   background: linear-gradient(135deg, #1a1a2e 0%, #0a0a0f 50%, #1a0a1e 100%);
+}
+
+html.theme-dark .text-text-primary {
+  color: #f5f7ff !important;
+}
+
+html.theme-dark .text-text-secondary {
+  color: #c9d2e6 !important;
+}
+
+html.theme-dark .text-text-muted {
+  color: #97a4bf !important;
+}
+
+html.theme-dark .bg-bg-card {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.theme-dark .bg-bg-card\/50 {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+html.theme-dark .bg-bg-primary\/50 {
+  background: rgba(8, 12, 24, 0.55) !important;
+}
+
+html.theme-dark .hover\:bg-bg-card:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.theme-dark .hover\:bg-bg-card-hover:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+}
+
+html.theme-dark .border-border-glass {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+html.theme-dark .border-border-glass\/50 {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.theme-dark .gradient-text-blue {
+  background: linear-gradient(135deg, #52d1ff, #ffd54a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+html.theme-dark .status-badge.upcoming {
+  background: rgba(82, 209, 255, 0.2);
+  color: #7ddbff;
+  border-color: rgba(82, 209, 255, 0.45);
+}
+
+html.theme-dark .status-badge.completed {
+  background: rgba(16, 185, 129, 0.2);
+  color: #5bf0b4;
+  border-color: rgba(16, 185, 129, 0.45);
 }
 
 .bg-gradient-card {

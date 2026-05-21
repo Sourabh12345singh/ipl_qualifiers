@@ -53,11 +53,12 @@ const Predictor = () => {
       }));
       setMatches(formattedMatches);
 
-      const formattedCompleted = (data.completedMatches || []).map((m) => ({
-        id: m.id,
+      const formattedCompleted = (data.completedMatches || []).map((m, idx) => ({
+        id: m.id || `completed-${m.matchNumber || idx}-${m.date || 'na'}`,
         matchNumber: m.matchNumber,
         team1: m.team1,
         team2: m.team2,
+        teams: m.teams,
         date: m.date,
         venue: m.venue,
         winner: m.winner,
@@ -246,8 +247,8 @@ const Predictor = () => {
                     )}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                    {(showAllCompleted ? completedMatches : completedMatches.slice(0, 4)).map((match) => (
-                      <CompletedMatchCard key={match.id} match={match} />
+                    {(showAllCompleted ? completedMatches : completedMatches.slice(0, 4)).map((match, index) => (
+                      <CompletedMatchCard key={`${match.id}-${index}`} match={match} />
                     ))}
                   </div>
                 </>

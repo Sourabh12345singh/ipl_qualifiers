@@ -2,15 +2,17 @@ import { motion } from 'framer-motion';
 import { Calendar, MapPin, CheckCircle2, Trophy } from 'lucide-react';
 
 const CompletedMatchCard = ({ match }) => {
-  const team1 = match.team1;
-  const team2 = match.team2;
-  const winner = match.winner;
-  const status = match.status;
+  const teamsText = match.teams || '';
+  const parsedTeams = teamsText.includes(' vs ') ? teamsText.split(' vs ') : [];
+  const team1 = match.team1 || parsedTeams[0] || 'TBD';
+  const team2 = match.team2 || parsedTeams[1] || 'TBD';
+  const winner = match.winner || '';
+  const status = match.status || '';
   const team1Score = match.team1Score;
   const team2Score = match.team2Score;
 
-  const isTeam1Winner = winner?.toLowerCase() === team1.toLowerCase();
-  const isNoResult = status?.toLowerCase().includes('no result');
+  const isTeam1Winner = winner.toLowerCase() === team1.toLowerCase();
+  const isNoResult = status.toLowerCase().includes('no result');
 
   return (
     <motion.div

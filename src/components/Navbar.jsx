@@ -8,6 +8,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const location = useLocation();
 
   useEffect(() => {
@@ -15,6 +16,11 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('theme-dark', theme === 'dark');
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -26,6 +32,10 @@ const Navbar = () => {
     { path: '/', label: 'Home', icon: Trophy },
     { path: '/predictor', label: 'Predictor', icon: BarChart3 },
   ];
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   return (
     <motion.nav
@@ -80,6 +90,14 @@ const Navbar = () => {
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
               <span className="font-medium text-sm">Refresh</span>
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleTheme}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-bg-card transition-all duration-200"
+            >
+              <span className="font-medium text-sm">{theme === 'dark' ? 'White' : 'Black'}</span>
             </motion.button>
           </div>
 
