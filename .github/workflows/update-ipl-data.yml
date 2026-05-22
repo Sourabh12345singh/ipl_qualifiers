@@ -51,6 +51,9 @@ jobs:
 
       -   name: Commit and push changes
           if: steps.git-check.outputs.changed == 'true'
+          env:
+            CRICAPI_KEY: ${{ secrets.CRICAPI_KEY }}
+
           run: |
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
