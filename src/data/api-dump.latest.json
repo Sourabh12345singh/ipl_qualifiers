@@ -1,6 +1,6 @@
 {
-  "fetchedAt": "2026-05-21T12:20:22.121Z",
-  "yesterdayDateIST": "2026-05-20",
+  "fetchedAt": "2026-05-22T01:16:44.525Z",
+  "yesterdayDateIST": "2026-05-21",
   "pointsRaw": {
     "apikey": "a3716aeb-2699-4946-8440-4b13b23a22a9",
     "data": [
@@ -8,9 +8,9 @@
         "teamname": "Chennai Super Kings",
         "shortname": "CSK",
         "img": "https://g.cricapi.com/iapi/135-637852956181378533.png?w=48",
-        "matches": 13,
+        "matches": 14,
         "wins": 6,
-        "loss": 7,
+        "loss": 8,
         "ties": 0,
         "nr": 0
       },
@@ -28,8 +28,8 @@
         "teamname": "Gujarat Titans",
         "shortname": "GT",
         "img": "https://g.cricapi.com/iapi/172-637852957798476823.png?w=48",
-        "matches": 13,
-        "wins": 8,
+        "matches": 14,
+        "wins": 9,
         "loss": 5,
         "ties": 0,
         "nr": 0
@@ -107,12 +107,12 @@
     ],
     "status": "success",
     "info": {
-      "hitsToday": 41,
+      "hitsToday": 13,
       "hitsUsed": 1,
       "hitsLimit": 100,
       "credits": 0,
       "server": 10,
-      "queryTime": 43.011,
+      "queryTime": 28.9092,
       "s": 0,
       "cache": 0
     }
@@ -941,7 +941,7 @@
           "id": "fd660ab1-c4bf-4c0f-b1b9-7232361cd1e8",
           "name": "Gujarat Titans vs Chennai Super Kings, 66th Match, Indian Premier League 2026",
           "matchType": "t20",
-          "status": "Match starts at May 21, 14:00 GMT",
+          "status": "Gujarat Titans won by 89 runs",
           "venue": "Narendra Modi Stadium, Ahmedabad",
           "date": "2026-05-21",
           "dateTimeGMT": "2026-05-21T14:00:00",
@@ -961,11 +961,11 @@
               "img": "https://g.cricapi.com/iapi/172-637852957798476823.png?w=48"
             }
           ],
-          "fantasyEnabled": false,
+          "fantasyEnabled": true,
           "bbbEnabled": false,
           "hasSquad": true,
-          "matchStarted": false,
-          "matchEnded": false
+          "matchStarted": true,
+          "matchEnded": true
         },
         {
           "id": "8fbd3678-6299-4e67-8c28-74d4952b6ae7",
@@ -2336,12 +2336,12 @@
     },
     "status": "success",
     "info": {
-      "hitsToday": 42,
+      "hitsToday": 14,
       "hitsUsed": 1,
       "hitsLimit": 100,
       "credits": 0,
-      "server": 11,
-      "queryTime": 47.1626,
+      "server": 9,
+      "queryTime": 55.6097,
       "s": 0,
       "cache": 0
     }
@@ -2349,23 +2349,23 @@
   "extracted": {
     "pointsTable": [
       {
-        "team": "Royal Challengers Bengaluru",
-        "short": "RCBW",
-        "played": 13,
+        "team": "Gujarat Titans",
+        "short": "GT",
+        "played": 14,
         "won": 9,
-        "lost": 4,
+        "lost": 5,
         "noResult": 0,
         "points": 18,
         "nrr": 0
       },
       {
-        "team": "Gujarat Titans",
-        "short": "GT",
+        "team": "Royal Challengers Bengaluru",
+        "short": "RCB",
         "played": 13,
-        "won": 8,
-        "lost": 5,
+        "won": 9,
+        "lost": 4,
         "noResult": 0,
-        "points": 16,
+        "points": 18,
         "nrr": 0
       },
       {
@@ -2401,9 +2401,9 @@
       {
         "team": "Chennai Super Kings",
         "short": "CSK",
-        "played": 13,
+        "played": 14,
         "won": 6,
-        "lost": 7,
+        "lost": 8,
         "noResult": 0,
         "points": 12,
         "nrr": 0
@@ -2451,18 +2451,18 @@
     ],
     "yesterdayMatchesFromAPI": [
       {
-        "id": "5b1d59f9-51fd-449d-8cf1-9fc15ef15675",
+        "id": "fd660ab1-c4bf-4c0f-b1b9-7232361cd1e8",
         "matchNumber": 0,
-        "name": "Kolkata Knight Riders vs Mumbai Indians, 65th Match, Indian Premier League 2026",
-        "team1": "KKR",
-        "team2": "MI",
-        "team1Full": "Kolkata Knight Riders",
-        "team2Full": "Mumbai Indians",
-        "date": "2026-05-20",
-        "dateTimeGMT": "2026-05-20T14:00:00",
-        "venue": "Eden Gardens, Kolkata",
-        "status": "Kolkata Knight Riders won by 4 wkts",
-        "winner": "KKR",
+        "name": "Gujarat Titans vs Chennai Super Kings, 66th Match, Indian Premier League 2026",
+        "team1": "GT",
+        "team2": "CSK",
+        "team1Full": "Gujarat Titans",
+        "team2Full": "Chennai Super Kings",
+        "date": "2026-05-21",
+        "dateTimeGMT": "2026-05-21T14:00:00",
+        "venue": "Narendra Modi Stadium, Ahmedabad",
+        "status": "Gujarat Titans won by 89 runs",
+        "winner": "GT",
         "matchEnded": true,
         "team1Score": "",
         "team2Score": ""
@@ -2470,26 +2470,26 @@
     ],
     "recentCompleted": [
       {
-        "id": 65,
-        "matchNumber": 65,
-        "team1": "KKR",
-        "team2": "MI",
-        "date": "2026-05-20",
+        "id": 66,
+        "matchNumber": 66,
+        "team1": "GT",
+        "team2": "CSK",
+        "date": "2026-05-21",
         "time": "19:30",
-        "venue": "Eden Gardens",
-        "status": "Kolkata Knight Riders won by 4 wkts",
-        "winner": "KKR",
+        "venue": "Narendra Modi Stadium",
+        "status": "Gujarat Titans won by 89 runs",
+        "winner": "GT",
         "team1Score": "",
         "team2Score": ""
       }
     ],
     "yesterdayTeams": [
-      "KKR",
-      "MI"
+      "GT",
+      "CSK"
     ],
     "changedTeams": [],
     "movedMatchKeys": [
-      "65::65"
+      "66::66"
     ]
   }
 }

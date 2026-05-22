@@ -66,6 +66,11 @@ function normalizeTeamName(name) {
   return TEAM_MAP[trimmed] || trimmed;
 }
 
+function normalizeTeamShortCode(code) {
+  if (!code) return '';
+  return TEAM_MAP[code.trim()] || code.trim();
+}
+
 async function fetchWithRetry(url, retries = 0) {
   try {
     const res = await fetch(url);
@@ -100,14 +105,15 @@ async function fetchPointsTable() {
 
   const teams = data.data.map((t) => ({
     team: t.teamname || t.name || t.team || '',
-    short:
+    short: normalizeTeamShortCode(
       t.shortname ||
       t.short ||
       (t.teamname || t.name || t.team || '')
         .split(' ')
         .map((w) => w[0])
         .join('')
-        .toUpperCase(),
+        .toUpperCase()
+    ),
     played: parseInt(t.matches || t.played || 0, 10),
     won: parseInt(t.wins || t.won || 0, 10),
     lost: parseInt(t.loss || t.lost || 0, 10),
@@ -332,9 +338,21 @@ function isLikelyCompletedStatus(status = '') {
   return s.includes('won') || s.includes('tied') || s.includes('no result') || s.includes('abandoned') || s.includes('completed');
 }
 
+const now = Date.now();
+  const last24h = now - 24 * 60 * 60 * 1000;
+
+  return schedule
+    .filter((match) => {
+      const start = new Date(`${match.date}T${match.time}+05:30`).getTime();
+      return start >= last24h && start <= now;
+    })
+
+
 function getRecentCompletedMatches(schedule, apiMatches) {
   const now = Date.now();
-  const last24h = now - 24 * 60 * 60 * 1000;
+  const todayIST = getISTDateString();
+  const yesterdayIST = getYesterdayISTDateString();
+  const recentDates = new Set([todayIST, yesterdayIST]);
 
   const apiMap = new Map();
   apiMatches.forEach((m) => {
@@ -347,8 +365,7 @@ function getRecentCompletedMatches(schedule, apiMatches) {
 
   return schedule
     .filter((match) => {
-      const start = new Date(`${match.date}T${match.time}+05:30`).getTime();
-      return start >= last24h && start <= now;
+      return recentDates.has((match.date || '').slice(0, 10));
     })
     .map((match) => {
       const apiMatch = apiMap.get(`id:${match.id}`) || apiMap.get(`${match.team1}-${match.team2}-${match.date}`);
@@ -385,11 +402,19 @@ function mergeRecentCompleted(previousCompleted, previousRemaining, recentComple
     completedMap.set(keyOf(m), m);
   });
 
-  const updatedCompleted = [...completedMap.values()].sort((a, b) => {
+  const allCompletedSorted = [...completedMap.values()].sort((a, b) => {
     const dateA = new Date(`${a.date}T${a.time || '19:30'}+05:30`).getTime();
     const dateB = new Date(`${b.date}T${b.time || '19:30'}+05:30`).getTime();
     return dateB - dateA;
   });
+
+  const recentSorted = [...recentCompleted].sort((a, b) => {
+    const dateA = new Date(`${a.date}T${a.time || '19:30'}+05:30`).getTime();
+    const dateB = new Date(`${b.date}T${b.time || '19:30'}+05:30`).getTime();
+    return dateB - dateA;
+  });
+  const olderCompleted = allCompletedSorted.filter((m) => !recentMap.has(keyOf(m)));
+  const updatedCompleted = [...recentSorted, ...olderCompleted];
 
   return {
     updatedCompleted,

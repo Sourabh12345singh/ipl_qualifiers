@@ -29,12 +29,18 @@ const Predictor = () => {
   const loadData = async () => {
     try {
       const data = await fetchIPLData();
+      const normalizeShort = (code) => {
+        if (!code) return '';
+        const c = String(code).trim().toUpperCase();
+        return c === 'RCBW' ? 'RCB' : c;
+      };
+
       const formattedTeams = data.pointsTable.map((t) => ({
-        id: t.short.toLowerCase(),
-        shortName: t.short,
+        id: normalizeShort(t.short).toLowerCase(),
+        shortName: normalizeShort(t.short),
         name: t.team,
-        color: teamMeta[t.short]?.color || '#888888',
-        logo: teamMeta[t.short]?.logo || '🏏',
+        color: teamMeta[normalizeShort(t.short)]?.color || '#888888',
+        logo: teamMeta[normalizeShort(t.short)]?.logo || '??',
         played: t.played,
         won: t.won,
         lost: t.lost,
@@ -440,3 +446,4 @@ const getFallbackMatches = () => [
 ];
 
 export default Predictor;
+
