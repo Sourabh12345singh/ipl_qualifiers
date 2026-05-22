@@ -38,15 +38,32 @@ jobs:
         run: |
           git diff --quiet src/utils/iplData.js || echo "changed=true" >> $GITHUB_OUTPUT
 
-      - name: Commit and push changes
-        if: steps.git-check.outputs.changed == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull origin main --rebase
-          git add src/utils/iplData.js
-          git commit -m "chore: update IPL standings and matches [auto]"
-          git push origin main
+      # - name: Commit and push changes
+      #   if: steps.git-check.outputs.changed == 'true'
+      #   run: |
+      #     git config user.name "github-actions[bot]"
+      #     git config user.email "github-actions[bot]@users.noreply.github.com"
+      #     git pull origin main --rebase
+      #     git add src/utils/iplData.js
+      #     git commit -m "chore: update IPL standings and matches [auto]"
+      #     git push origin main
+
+
+      -   name: Commit and push changes
+          if: steps.git-check.outputs.changed == 'true'
+          run: |
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+            git reset --hard HEAD
+            git pull origin main --rebase
+        
+            node scripts/update-data.mjs
+        
+            git add src/utils/iplData.js
+            git commit -m "chore: update IPL standings and matches [auto]"
+        
+            git push origin main
 
       - name: No changes detected
         if: steps.git-check.outputs.changed != 'true'
