@@ -3,7 +3,7 @@ const CACHE_TIMESTAMP_KEY = 'ipl_data_timestamp';
 const REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 const defaultData = {
-  lastUpdated: '2026-05-23T01:42:49.052Z',
+  lastUpdated: '2026-05-23T19:45:37.153Z',
   pointsTable: [
     {
         "team": "Royal Challengers Bengaluru",
@@ -36,6 +36,16 @@ const defaultData = {
         "nrr": 0.35
     },
     {
+        "team": "Punjab Kings",
+        "short": "PBKS",
+        "played": 14,
+        "won": 7,
+        "lost": 6,
+        "noResult": 1,
+        "points": 15,
+        "nrr": 0.227
+    },
+    {
         "team": "Rajasthan Royals",
         "short": "RR",
         "played": 13,
@@ -44,16 +54,6 @@ const defaultData = {
         "noResult": 0,
         "points": 14,
         "nrr": 0.083
-    },
-    {
-        "team": "Punjab Kings",
-        "short": "PBKS",
-        "played": 13,
-        "won": 6,
-        "lost": 6,
-        "noResult": 1,
-        "points": 13,
-        "nrr": 0.227
     },
     {
         "team": "Kolkata Knight Riders",
@@ -98,15 +98,28 @@ const defaultData = {
     {
         "team": "Lucknow Super Giants",
         "short": "LSG",
-        "played": 13,
+        "played": 14,
         "won": 3,
-        "lost": 9,
+        "lost": 10,
         "noResult": 0,
         "points": 7,
         "nrr": -0.702
     }
 ],
   completedMatches: [
+    {
+        "id": 68,
+        "matchNumber": 68,
+        "team1": "LSG",
+        "team2": "PBKS",
+        "date": "2026-05-23",
+        "time": "19:30",
+        "venue": "BRSABV Ekana Stadium",
+        "status": "Punjab Kings won by 7 wkts",
+        "winner": "PBKS",
+        "team1Score": "",
+        "team2Score": ""
+    },
     {
         "id": 67,
         "matchNumber": 67,
@@ -980,19 +993,6 @@ const defaultData = {
     }
 ],
   remainingMatches: [
-    {
-        "id": 68,
-        "matchNumber": 68,
-        "team1": "LSG",
-        "team2": "PBKS",
-        "date": "2026-05-23",
-        "time": "19:30",
-        "venue": "BRSABV Ekana Stadium",
-        "status": "Match starts at May 23, 14:00 GMT",
-        "winner": "",
-        "team1Score": "",
-        "team2Score": ""
-    },
     {
         "id": 69,
         "matchNumber": 69,
