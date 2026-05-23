@@ -3,18 +3,8 @@ const CACHE_TIMESTAMP_KEY = 'ipl_data_timestamp';
 const REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 const defaultData = {
-  lastUpdated: '2026-05-23T01:35:59.260Z',
+  lastUpdated: '2026-05-23T01:42:49.052Z',
   pointsTable: [
-    {
-        "team": "Gujarat Titans",
-        "short": "GT",
-        "played": 14,
-        "won": 9,
-        "lost": 5,
-        "noResult": 0,
-        "points": 18,
-        "nrr": 0.695
-    },
     {
         "team": "Royal Challengers Bengaluru",
         "short": "RCB",
@@ -26,13 +16,23 @@ const defaultData = {
         "nrr": 1.065
     },
     {
+        "team": "Gujarat Titans",
+        "short": "GT",
+        "played": 14,
+        "won": 9,
+        "lost": 5,
+        "noResult": 0,
+        "points": 18,
+        "nrr": 0.695
+    },
+    {
         "team": "Sunrisers Hyderabad",
         "short": "SRH",
         "played": 14,
         "won": 9,
         "lost": 5,
         "noResult": 0,
-        "points": 16,
+        "points": 18,
         "nrr": 0.35
     },
     {
@@ -56,6 +56,16 @@ const defaultData = {
         "nrr": 0.227
     },
     {
+        "team": "Kolkata Knight Riders",
+        "short": "KKR",
+        "played": 13,
+        "won": 5,
+        "lost": 6,
+        "noResult": 1,
+        "points": 12,
+        "nrr": 0.011
+    },
+    {
         "team": "Chennai Super Kings",
         "short": "CSK",
         "played": 14,
@@ -76,16 +86,6 @@ const defaultData = {
         "nrr": -0.871
     },
     {
-        "team": "Kolkata Knight Riders",
-        "short": "KKR",
-        "played": 13,
-        "won": 5,
-        "lost": 6,
-        "noResult": 1,
-        "points": 13,
-        "nrr": 0.011
-    },
-    {
         "team": "Mumbai Indians",
         "short": "MI",
         "played": 13,
@@ -102,7 +102,7 @@ const defaultData = {
         "won": 3,
         "lost": 9,
         "noResult": 0,
-        "points": 8,
+        "points": 7,
         "nrr": -0.702
     }
 ],
