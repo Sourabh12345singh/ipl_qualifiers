@@ -220,10 +220,10 @@ function loadSchedule() {
 
 function classifyMatches(schedule, apiMatches) {
   const now = Date.now();
-  const fourHoursMs = 4 * 60 * 60 * 1000;
 
   const apiMap = new Map();
   apiMatches.forEach((m) => {
+    if (m.id) apiMap.set(`id:${m.id}`, m);
     const key = `${m.team1}-${m.team2}-${m.date}`;
     const reverseKey = `${m.team2}-${m.team1}-${m.date}`;
     apiMap.set(key, m);
@@ -235,19 +235,16 @@ function classifyMatches(schedule, apiMatches) {
 
   schedule.forEach((match) => {
     const matchStart = new Date(`${match.date}T${match.time}+05:30`).getTime();
-    const isCompleted = (now - matchStart) > fourHoursMs;
-
-    const key = `${match.team1}-${match.team2}-${match.date}`;
-    const apiMatch = apiMap.get(key);
+    const isFuture = matchStart > now;
+    const apiMatch = apiMap.get(`id:${match.id}`) || apiMap.get(`${match.team1}-${match.team2}-${match.date}`);
+    const apiCompleted = apiMatch ? (apiMatch.matchEnded || isLikelyCompletedStatus(apiMatch.status)) : false;
 
     let status = 'Upcoming';
     let winner = '';
 
     if (apiMatch) {
-      status = apiMatch.status || 'Completed';
+      status = apiMatch.status || (apiCompleted ? 'Completed' : 'Upcoming');
       winner = apiMatch.winner || '';
-    } else if (isCompleted) {
-      status = 'Completed';
     }
 
     const matchData = {
@@ -264,10 +261,13 @@ function classifyMatches(schedule, apiMatches) {
       team2Score: apiMatch?.team2Score || '',
     };
 
-    if (isCompleted || apiMatch) {
-      completed.push(matchData);
-    } else {
+    if (isFuture && !apiCompleted) {
       remaining.push(matchData);
+    } else {
+      completed.push({
+        ...matchData,
+        status: apiCompleted ? status : (status === 'Upcoming' ? 'Completed' : status),
+      });
     }
   });
 
@@ -336,66 +336,6 @@ function updatePointsTablePreserveNRRandNoResult(previousPoints, latestPoints) {
 function isLikelyCompletedStatus(status = '') {
   const s = status.toLowerCase();
   return s.includes('won') || s.includes('tied') || s.includes('no result') || s.includes('abandoned') || s.includes('completed');
-}
-
-function getRecentCompletedMatches(schedule, apiMatches) {
-  const now = Date.now();
-  const todayIST = getISTDateString();
-  const yesterdayIST = getYesterdayISTDateString();
-  const recentDates = new Set([todayIST, yesterdayIST]);
-
-  const apiMap = new Map();
-  apiMatches.forEach((m) => {
-    if (m.id) apiMap.set(`id:${m.id}`, m);
-    const key = `${m.team1}-${m.team2}-${m.date}`;
-    const reverseKey = `${m.team2}-${m.team1}-${m.date}`;
-    apiMap.set(key, m);
-    apiMap.set(reverseKey, m);
-  });
-
-  return schedule
-    .filter((match) => {
-      return recentDates.has((match.date || '').slice(0, 10));
-    })
-    .map((match) => {
-      const apiMatch = apiMap.get(`id:${match.id}`) || apiMap.get(`${match.team1}-${match.team2}-${match.date}`);
-      const start = new Date(`${match.date}T${match.time}+05:30`).getTime();
-      const timeCompleted = (now - start) > 4 * 60 * 60 * 1000;
-      const apiCompleted = apiMatch ? (apiMatch.matchEnded || isLikelyCompletedStatus(apiMatch.status)) : false;
-      if (!timeCompleted && !apiCompleted) return null;
-
-      return {
-        id: match.id,
-        matchNumber: match.matchNumber,
-        team1: match.team1,
-        team2: match.team2,
-        date: match.date,
-        time: match.time,
-        venue: match.venue,
-        status: apiMatch?.status || 'Completed',
-        winner: apiMatch?.winner || '',
-        team1Score: apiMatch?.team1Score || '',
-        team2Score: apiMatch?.team2Score || '',
-      };
-    })
-    .filter(Boolean);
-}
-
-function mergeRecentCompleted(previousCompleted, recentCompleted) {
-  const keyOf = (m) => `${m.id ?? ''}::${m.matchNumber ?? ''}`;
-  const existingKeys = new Set((previousCompleted || []).map((m) => keyOf(m)));
-  const recentSorted = [...recentCompleted].sort((a, b) => {
-    const dateA = new Date(`${a.date}T${a.time || '19:30'}+05:30`).getTime();
-    const dateB = new Date(`${b.date}T${b.time || '19:30'}+05:30`).getTime();
-    return dateB - dateA;
-  });
-  const toAdd = recentSorted.filter((m) => !existingKeys.has(keyOf(m))).slice(0, 2);
-  const updatedCompleted = [...toAdd, ...(previousCompleted || [])];
-
-  return {
-    updatedCompleted,
-    updatedKeys: toAdd.map((m) => keyOf(m)),
-  };
 }
 
 function generateIPLDataFile(pointsTable, completedMatches, remainingMatches) {
@@ -487,14 +427,10 @@ async function main() {
     const schedule = loadSchedule();
     const outputPath = join(ROOT, 'src', 'utils', 'iplData.js');
     let previousPoints = pointsTable;
-    let previousCompleted = [];
-    let previousRemaining = schedule;
     try {
       const oldFile = readFileSync(outputPath, 'utf-8');
       const parsed = parseExistingDataFromFile(oldFile);
       if (parsed.pointsTable) previousPoints = parsed.pointsTable;
-      if (parsed.completedMatches) previousCompleted = parsed.completedMatches;
-      if (parsed.remainingMatches) previousRemaining = parsed.remainingMatches;
     } catch {
       // First run or missing file; keep latest points as baseline.
     }
@@ -509,10 +445,7 @@ async function main() {
 
     printDummyPointsTable(pointsTable);
     const { updatedPoints, changedTeams } = updatePointsTablePreserveNRRandNoResult(previousPoints, pointsTable);
-
-    const recentCompleted = getRecentCompletedMatches(schedule, apiMatches);
-    const { updatedCompleted, updatedKeys } = mergeRecentCompleted(previousCompleted, recentCompleted);
-    const updatedRemaining = previousRemaining;
+    const { completed: updatedCompleted, remaining: updatedRemaining } = classifyMatches(schedule, apiMatches);
 
     const fileContent = generateIPLDataFile(updatedPoints, updatedCompleted, updatedRemaining);
 
@@ -531,10 +464,10 @@ async function main() {
           extracted: {
             pointsTable,
             yesterdayMatchesFromAPI,
-            recentCompleted,
+            completedMatches: updatedCompleted,
+            remainingMatches: updatedRemaining,
             yesterdayTeams: [...yesterdayTeams],
             changedTeams,
-            movedMatchKeys: updatedKeys,
           },
         },
         null,
@@ -550,7 +483,6 @@ async function main() {
     console.log(`Remaining matches: ${updatedRemaining.length}`);
     console.log(`Yesterday (IST: ${yesterdayDate}) teams: ${[...yesterdayTeams].join(', ') || 'None'}`);
     console.log(`Points changed for teams: ${changedTeams.join(', ') || 'None'}`);
-    console.log(`Last-24h completed matches moved: ${updatedKeys.length}`);
 
     if (updatedCompleted.length > 0) {
       console.log('\nMost recent completed match:');

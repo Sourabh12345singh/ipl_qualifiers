@@ -1,6 +1,6 @@
 {
-  "fetchedAt": "2026-05-22T01:16:44.525Z",
-  "yesterdayDateIST": "2026-05-21",
+  "fetchedAt": "2026-05-23T01:01:10.373Z",
+  "yesterdayDateIST": "2026-05-22",
   "pointsRaw": {
     "apikey": "a3716aeb-2699-4946-8440-4b13b23a22a9",
     "data": [
@@ -88,9 +88,9 @@
         "teamname": "Royal Challengers Bengaluru",
         "shortname": "RCBW",
         "img": "https://g.cricapi.com/iapi/21439-638468478038395955.jpg?w=48",
-        "matches": 13,
+        "matches": 14,
         "wins": 9,
-        "loss": 4,
+        "loss": 5,
         "ties": 0,
         "nr": 0
       },
@@ -98,8 +98,8 @@
         "teamname": "Sunrisers Hyderabad",
         "shortname": "SRH",
         "img": "https://g.cricapi.com/iapi/279-637852957609490368.png?w=48",
-        "matches": 13,
-        "wins": 8,
+        "matches": 14,
+        "wins": 9,
         "loss": 5,
         "ties": 0,
         "nr": 0
@@ -107,12 +107,12 @@
     ],
     "status": "success",
     "info": {
-      "hitsToday": 13,
+      "hitsToday": 4,
       "hitsUsed": 1,
       "hitsLimit": 100,
       "credits": 0,
-      "server": 10,
-      "queryTime": 28.9092,
+      "server": 9,
+      "queryTime": 46.9941,
       "s": 0,
       "cache": 0
     }
@@ -1691,7 +1691,7 @@
           "id": "bf23431b-ba1c-4147-94d9-b8d361a3ce9e",
           "name": "Sunrisers Hyderabad vs Royal Challengers Bengaluru, 67th Match, Indian Premier League 2026",
           "matchType": "t20",
-          "status": "Match starts at May 22, 14:00 GMT",
+          "status": "Sunrisers Hyderabad won by 55 runs",
           "venue": "Rajiv Gandhi International Stadium, Hyderabad",
           "date": "2026-05-22",
           "dateTimeGMT": "2026-05-22T14:00:00",
@@ -1711,11 +1711,11 @@
               "img": "https://g.cricapi.com/iapi/279-637852957609490368.png?w=48"
             }
           ],
-          "fantasyEnabled": false,
+          "fantasyEnabled": true,
           "bbbEnabled": false,
           "hasSquad": true,
-          "matchStarted": false,
-          "matchEnded": false
+          "matchStarted": true,
+          "matchEnded": true
         },
         {
           "id": "fbd861ca-4efb-4d1d-b46c-ba3bc334bce4",
@@ -1834,17 +1834,22 @@
         },
         {
           "id": "58ddaae3-9fa7-4110-97f8-c9ae6d80099b",
-          "name": "Tbc vs Tbc, Eliminator, Indian Premier League 2026",
+          "name": "Sunrisers Hyderabad vs Tbc, Eliminator, Indian Premier League 2026",
           "matchType": "t20",
           "status": "Match starts at May 27, 14:00 GMT",
           "venue": "Maharaja Yadavindra Singh International Cricket Stadium, Mullanpur, New Chandigarh",
           "date": "2026-05-27",
           "dateTimeGMT": "2026-05-27T14:00:00",
           "teams": [
-            "Tbc",
+            "Sunrisers Hyderabad",
             "Tbc"
           ],
           "teamInfo": [
+            {
+              "name": "Sunrisers Hyderabad",
+              "shortname": "SRH",
+              "img": "https://g.cricapi.com/iapi/279-637852957609490368.png?w=48"
+            },
             {
               "name": "Tbc",
               "shortname": "TBC",
@@ -2069,26 +2074,31 @@
         },
         {
           "id": "cae89dea-04b5-4b01-85c9-e0c05419fa4f",
-          "name": "Tbc vs Tbc, Qualifier 1, Indian Premier League 2026",
+          "name": "Royal Challengers Bengaluru vs Gujarat Titans, Qualifier 1, Indian Premier League 2026",
           "matchType": "t20",
           "status": "Match starts at May 26, 14:00 GMT",
           "venue": "Himachal Pradesh Cricket Association Stadium, Dharamsala",
           "date": "2026-05-26",
           "dateTimeGMT": "2026-05-26T14:00:00",
           "teams": [
-            "Tbc",
-            "Tbc"
+            "Royal Challengers Bengaluru",
+            "Gujarat Titans"
           ],
           "teamInfo": [
             {
-              "name": "Tbc",
-              "shortname": "TBC",
-              "img": "https://h.cricapi.com/img/icon512.png"
+              "name": "Gujarat Titans",
+              "shortname": "GT",
+              "img": "https://g.cricapi.com/iapi/172-637852957798476823.png?w=48"
+            },
+            {
+              "name": "Royal Challengers Bengaluru",
+              "shortname": "RCBW",
+              "img": "https://g.cricapi.com/iapi/21439-638468478038395955.jpg?w=48"
             }
           ],
           "fantasyEnabled": false,
           "bbbEnabled": false,
-          "hasSquad": false,
+          "hasSquad": true,
           "matchStarted": false,
           "matchEnded": false
         },
@@ -2336,12 +2346,12 @@
     },
     "status": "success",
     "info": {
-      "hitsToday": 14,
+      "hitsToday": 3,
       "hitsUsed": 1,
       "hitsLimit": 100,
       "credits": 0,
-      "server": 9,
-      "queryTime": 55.6097,
+      "server": 1,
+      "queryTime": 47.6023,
       "s": 0,
       "cache": 0
     }
@@ -2361,9 +2371,9 @@
       {
         "team": "Royal Challengers Bengaluru",
         "short": "RCB",
-        "played": 13,
+        "played": 14,
         "won": 9,
-        "lost": 4,
+        "lost": 5,
         "noResult": 0,
         "points": 18,
         "nrr": 0
@@ -2371,11 +2381,11 @@
       {
         "team": "Sunrisers Hyderabad",
         "short": "SRH",
-        "played": 13,
-        "won": 8,
+        "played": 14,
+        "won": 9,
         "lost": 5,
         "noResult": 0,
-        "points": 16,
+        "points": 18,
         "nrr": 0
       },
       {
@@ -2451,18 +2461,18 @@
     ],
     "yesterdayMatchesFromAPI": [
       {
-        "id": "fd660ab1-c4bf-4c0f-b1b9-7232361cd1e8",
+        "id": "bf23431b-ba1c-4147-94d9-b8d361a3ce9e",
         "matchNumber": 0,
-        "name": "Gujarat Titans vs Chennai Super Kings, 66th Match, Indian Premier League 2026",
-        "team1": "GT",
-        "team2": "CSK",
-        "team1Full": "Gujarat Titans",
-        "team2Full": "Chennai Super Kings",
-        "date": "2026-05-21",
-        "dateTimeGMT": "2026-05-21T14:00:00",
-        "venue": "Narendra Modi Stadium, Ahmedabad",
-        "status": "Gujarat Titans won by 89 runs",
-        "winner": "GT",
+        "name": "Sunrisers Hyderabad vs Royal Challengers Bengaluru, 67th Match, Indian Premier League 2026",
+        "team1": "SRH",
+        "team2": "RCB",
+        "team1Full": "Sunrisers Hyderabad",
+        "team2Full": "Royal Challengers Bengaluru",
+        "date": "2026-05-22",
+        "dateTimeGMT": "2026-05-22T14:00:00",
+        "venue": "Rajiv Gandhi International Stadium, Hyderabad",
+        "status": "Sunrisers Hyderabad won by 55 runs",
+        "winner": "SRH",
         "matchEnded": true,
         "team1Score": "",
         "team2Score": ""
@@ -2470,26 +2480,24 @@
     ],
     "recentCompleted": [
       {
-        "id": 66,
-        "matchNumber": 66,
-        "team1": "GT",
-        "team2": "CSK",
-        "date": "2026-05-21",
+        "id": 67,
+        "matchNumber": 67,
+        "team1": "SRH",
+        "team2": "RCB",
+        "date": "2026-05-22",
         "time": "19:30",
-        "venue": "Narendra Modi Stadium",
-        "status": "Gujarat Titans won by 89 runs",
-        "winner": "GT",
+        "venue": "Rajiv Gandhi International Cricket Stadium",
+        "status": "Sunrisers Hyderabad won by 55 runs",
+        "winner": "SRH",
         "team1Score": "",
         "team2Score": ""
       }
     ],
     "yesterdayTeams": [
-      "GT",
-      "CSK"
+      "SRH",
+      "RCB"
     ],
     "changedTeams": [],
-    "movedMatchKeys": [
-      "66::66"
-    ]
+    "movedMatchKeys": []
   }
 }
