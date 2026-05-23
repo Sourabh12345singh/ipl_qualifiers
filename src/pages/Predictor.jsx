@@ -55,6 +55,7 @@ const Predictor = () => {
         team1: m.team1.toLowerCase(),
         team2: m.team2.toLowerCase(),
         date: m.date,
+        time: m.time || '19:30',
         venue: m.venue || 'TBA',
       }));
       setMatches(formattedMatches);
@@ -66,6 +67,7 @@ const Predictor = () => {
         team2: m.team2,
         teams: m.teams,
         date: m.date,
+        time: m.time || '19:30',
         venue: m.venue,
         winner: m.winner,
         status: m.status,
@@ -74,8 +76,8 @@ const Predictor = () => {
       }));
 
       formattedCompleted.sort((a, b) => {
-        const dateA = new Date(`${a.date}T19:30+05:30`).getTime();
-        const dateB = new Date(`${b.date}T19:30+05:30`).getTime();
+        const dateA = new Date(`${a.date}T${a.time || '19:30'}+05:30`).getTime();
+        const dateB = new Date(`${b.date}T${b.time || '19:30'}+05:30`).getTime();
         return dateB - dateA;
       });
 

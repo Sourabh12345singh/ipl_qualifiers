@@ -14,7 +14,7 @@ const MatchCard = ({ match, team1, team2, winner, onSelectWinner }) => {
       <div className="flex items-center justify-between mb-3 sm:mb-4">
         <div className="flex items-center gap-1.5 text-text-muted text-xs sm:text-sm">
           <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          <span>{match.date}</span>
+          <span>{match.date} {match.time ? `• ${match.time} IST` : ''}</span>
         </div>
         <span className="status-badge upcoming">Upcoming</span>
       </div>
