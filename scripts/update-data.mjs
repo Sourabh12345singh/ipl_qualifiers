@@ -338,16 +338,6 @@ function isLikelyCompletedStatus(status = '') {
   return s.includes('won') || s.includes('tied') || s.includes('no result') || s.includes('abandoned') || s.includes('completed');
 }
 
-const now = Date.now();
-  const last24h = now - 24 * 60 * 60 * 1000;
-
-  return schedule
-    .filter((match) => {
-      const start = new Date(`${match.date}T${match.time}+05:30`).getTime();
-      return start >= last24h && start <= now;
-    })
-
-
 function getRecentCompletedMatches(schedule, apiMatches) {
   const now = Date.now();
   const todayIST = getISTDateString();
@@ -391,35 +381,20 @@ function getRecentCompletedMatches(schedule, apiMatches) {
     .filter(Boolean);
 }
 
-function mergeRecentCompleted(previousCompleted, previousRemaining, recentCompleted) {
+function mergeRecentCompleted(previousCompleted, recentCompleted) {
   const keyOf = (m) => `${m.id ?? ''}::${m.matchNumber ?? ''}`;
-  const recentMap = new Map(recentCompleted.map((m) => [keyOf(m), m]));
-
-  const updatedRemaining = previousRemaining.filter((m) => !recentMap.has(keyOf(m)));
-
-  const completedMap = new Map(previousCompleted.map((m) => [keyOf(m), m]));
-  recentCompleted.forEach((m) => {
-    completedMap.set(keyOf(m), m);
-  });
-
-  const allCompletedSorted = [...completedMap.values()].sort((a, b) => {
-    const dateA = new Date(`${a.date}T${a.time || '19:30'}+05:30`).getTime();
-    const dateB = new Date(`${b.date}T${b.time || '19:30'}+05:30`).getTime();
-    return dateB - dateA;
-  });
-
+  const existingKeys = new Set((previousCompleted || []).map((m) => keyOf(m)));
   const recentSorted = [...recentCompleted].sort((a, b) => {
     const dateA = new Date(`${a.date}T${a.time || '19:30'}+05:30`).getTime();
     const dateB = new Date(`${b.date}T${b.time || '19:30'}+05:30`).getTime();
     return dateB - dateA;
   });
-  const olderCompleted = allCompletedSorted.filter((m) => !recentMap.has(keyOf(m)));
-  const updatedCompleted = [...recentSorted, ...olderCompleted];
+  const toAdd = recentSorted.filter((m) => !existingKeys.has(keyOf(m))).slice(0, 2);
+  const updatedCompleted = [...toAdd, ...(previousCompleted || [])];
 
   return {
     updatedCompleted,
-    updatedRemaining,
-    updatedKeys: [...recentMap.keys()],
+    updatedKeys: toAdd.map((m) => keyOf(m)),
   };
 }
 
@@ -536,11 +511,8 @@ async function main() {
     const { updatedPoints, changedTeams } = updatePointsTablePreserveNRRandNoResult(previousPoints, pointsTable);
 
     const recentCompleted = getRecentCompletedMatches(schedule, apiMatches);
-    const { updatedCompleted, updatedRemaining, updatedKeys } = mergeRecentCompleted(
-      previousCompleted,
-      previousRemaining,
-      recentCompleted
-    );
+    const { updatedCompleted, updatedKeys } = mergeRecentCompleted(previousCompleted, recentCompleted);
+    const updatedRemaining = previousRemaining;
 
     const fileContent = generateIPLDataFile(updatedPoints, updatedCompleted, updatedRemaining);
 
