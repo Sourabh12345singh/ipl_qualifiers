@@ -1043,7 +1043,18 @@ const setCachedData = (data) => {
 };
 
 export const fetchIPLData = async () => {
+  const currentBuildVersion = import.meta.env.VITE_BUILD_TIMESTAMP || 'dev';
+  const storedVersion = localStorage.getItem('ipl_data_version');
   const cached = getCachedData();
+
+  if (storedVersion !== currentBuildVersion) {
+    localStorage.removeItem(CACHE_KEY);
+    localStorage.removeItem(CACHE_TIMESTAMP_KEY);
+    localStorage.setItem('ipl_data_version', currentBuildVersion);
+    setCachedData(defaultData);
+    return defaultData;
+  }
+
   if (cached && !isCacheExpired()) {
     return cached;
   }
@@ -1074,8 +1085,10 @@ export const getLastUpdated = () => {
 };
 
 export const forceRefresh = async () => {
+  const currentBuildVersion = import.meta.env.VITE_BUILD_TIMESTAMP || 'dev';
   localStorage.removeItem(CACHE_KEY);
   localStorage.removeItem(CACHE_TIMESTAMP_KEY);
+  localStorage.setItem('ipl_data_version', currentBuildVersion);
   setCachedData(defaultData);
   return defaultData;
 };

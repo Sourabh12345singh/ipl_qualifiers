@@ -1,203 +1,198 @@
-# IPL Playoff Predictor 2026
+# IPL Playoff Predictor (2026)
 
-> An interactive web application that simulates IPL playoff qualification scenarios using real-time standings from CricAPI, match predictions, and a DFS-based qualification algorithm.
+Interactive React app to explore IPL playoff qualification paths using live standings, scheduled fixtures, and scenario simulation.
 
-![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)
+This is a learning project built to practice frontend architecture, data handling, and scenario simulation.  
+It should not be treated as an official or production-grade source for IPL decisions or betting use cases.
+
+![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)
 ![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=for-the-badge&logo=vite)
-![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3-06B6D4?style=for-the-badge&logo=tailwindcss)
-![Framer Motion](https://img.shields.io/badge/Framer_Motion-11-0055FF?style=for-the-badge&logo=framer)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=for-the-badge&logo=tailwindcss)
+![Framer Motion](https://img.shields.io/badge/Framer_Motion-12-0055FF?style=for-the-badge&logo=framer)
 
-## Features
+## Overview
 
-### Live Standings
-- Current IPL 2026 points table fetched from CricAPI
-- Auto-updates daily at 12:01 AM IST via GitHub Actions
-- Sortable by points or NRR
+This project helps users:
+- Visualize the current IPL points table.
+- Predict winners for remaining matches.
+- See projected standings update in real time.
+- Check whether selected teams can qualify together.
+- Explore exact qualification scenarios when feasible.
 
-### Match Tracking
-- **Completed Matches** — Shows results with scores and winner
-- **Upcoming Matches** — Interactive cards to select winners
-- Auto-classifies matches based on schedule (start time + 4 hours)
+## Core Features
 
-### Qualification Analysis
-- Pick 1 to 4 teams you want to see qualify together
-- DFS algorithm simulates all 2^N possible match outcomes
-- Returns concrete scenarios showing exactly what needs to happen
-- View all qualifying scenarios on a dedicated page
-
-### Predicted Standings
-- Animated progress bars showing projected points
-- Green highlight for playoff zone (top 4)
-- Points change indicators (+2, +4) when selections are made
+- Live-style data pipeline backed by CricAPI snapshots.
+- Completed vs upcoming match classification.
+- Team selection (up to 4 teams) for qualification analysis.
+- Hybrid scenario engine:
+- Heuristic path for large search space (`>15` remaining matches).
+- Exact DFS simulation when search space is manageable (`<=15` matches).
+- Predicted standings with ranking, playoff zone, and quick insights.
+- Local caching with 24-hour TTL (`localStorage`).
 
 ## Tech Stack
 
-| Category | Technology |
-|---|---|
-| Framework | React 18 |
-| Build Tool | Vite 5 |
-| Styling | TailwindCSS 3 |
-| Animations | Framer Motion |
-| Icons | Lucide React |
-| Routing | React Router DOM |
-| Data Source | CricAPI (cricket data) |
-| Auto-Update | GitHub Actions (daily at 12:01 AM IST) |
-| Caching | LocalStorage (24hr TTL) |
+- React 19
+- Vite 5
+- Tailwind CSS 3
+- Framer Motion
+- React Router
+- Lucide React
+- ESLint
 
 ## Project Structure
 
+```text
+ipl-predictor/
+├─ public/
+│  ├─ favicon.svg
+│  └─ icons.svg
+├─ scripts/
+│  └─ update-data.mjs
+├─ src/
+│  ├─ components/
+│  │  ├─ CompletedMatchCard.jsx
+│  │  ├─ MatchCard.jsx
+│  │  ├─ Navbar.jsx
+│  │  ├─ PointsTable.jsx
+│  │  ├─ ScenarioResults.jsx
+│  │  ├─ TeamCard.jsx
+│  │  └─ TeamSelector.jsx
+│  ├─ data/
+│  │  ├─ api-dump.latest.json
+│  │  ├─ schedule.json
+│  │  └─ teams.js
+│  ├─ pages/
+│  │  ├─ AllScenarios.jsx
+│  │  ├─ Home.jsx
+│  │  └─ Predictor.jsx
+│  ├─ utils/
+│  │  ├─ algo.js
+│  │  ├─ calculations.js
+│  │  └─ iplData.js
+│  ├─ App.jsx
+│  ├─ index.css
+│  └─ main.jsx
+├─ eslint.config.js
+├─ package.json
+├─ postcss.config.js
+├─ tailwind.config.js
+└─ vite.config.js
 ```
-src/
-├── components/
-│   ├── Navbar.jsx              # Responsive navigation
-│   ├── TeamCard.jsx            # Team preview card
-│   ├── MatchCard.jsx           # Interactive match selector
-│   ├── CompletedMatchCard.jsx  # Completed match display
-│   ├── PointsTable.jsx         # Sortable points table
-│   ├── ProbabilityBar.jsx      # Qualification progress bar
-│   ├── TeamSelector.jsx        # Team picker (1-4 teams)
-│   ├── ScenarioResults.jsx     # Scenario display
-│   └── LoadingSkeleton.jsx     # Loading placeholders
-├── pages/
-│   ├── Home.jsx                # Landing page
-│   ├── Predictor.jsx           # Main dashboard
-│   └── AllScenarios.jsx        # Full scenario list
-├── data/
-│   ├── teams.js                # Team metadata
-│   └── schedule.json           # All 70 IPL match schedules
-├── utils/
-│   ├── iplData.js              # Data layer (auto-generated)
-│   ├── algo.js                 # DFS qualification algorithm
-│   └── calculations.js         # Predicted table & insights
-├── App.jsx                     # Router configuration
-├── main.jsx                    # Entry point
-└── index.css                   # Global styles
-scripts/
-└── update-data.mjs             # Auto-update script
-.github/
-└── workflows/
-    └── update-ipl-data.yml     # GitHub Actions workflow
-```
 
-## Algorithm
+## Qualification Logic
 
-The qualification checker uses **Depth-First Search with backtracking**:
+- Input: current table + remaining fixtures + selected teams.
+- If remaining matches are high (`>15`):
+- Run a fast mathematical feasibility check based on potential wins.
+- If remaining matches are lower (`<=15`):
+- Run DFS across all outcomes (`2^N`) and validate top-4 condition.
+- Output:
+- `possible: true/false`
+- scenario text
+- simulated final top-4 for valid paths
 
-1. Clone the current points table (never mutates original data)
-2. Recursively simulate every possible winner combination for remaining matches
-3. For each complete simulation:
-   - Update points, wins, losses
-   - Sort by points (DESC), then NRR (DESC)
-   - Check if all selected teams rank in top 4
-4. Collect all valid scenarios
-5. Return up to 3 scenarios inline, with option to view all
+Main implementation: `src/utils/algo.js`.
 
-**Time Complexity:** O(2^M × N log N) where M = remaining matches, N = teams
+## Data Flow
+
+- `scripts/update-data.mjs` pulls points + series data from CricAPI.
+- Schedule data (`src/data/schedule.json`) is merged with API output.
+- Matches are split into `completedMatches` and `remainingMatches`.
+- A generated data payload is written into `src/utils/iplData.js`.
+- Runtime cache in browser (`localStorage`) serves the app quickly.
+
+Supporting docs and diagrams are available in the repository root:
+- `flow_diagrams.md`
+- `application_architecture_layout.png`
+- `data_flow_and_caching.png`
+- `predictor_algorithm_flowchart.png`
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js >= 18
-- npm >= 9
+- Node.js 18+
+- npm 9+
 
-### Installation
+### Install
 
 ```bash
 git clone https://github.com/Sourabh12345singh/ipl_qualifiers.git
-cd ipl_qualifiers
+cd ipl_qualifiers/ipl-predictor
 npm install
+```
+
+### Run Dev Server
+
+```bash
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`
+App runs by default at `http://localhost:5173`.
 
-### Build for Production
-
-```bash
-npm run build
-```
-
-Output is generated in the `dist/` directory.
-
-## Automated Data Updates
-
-A GitHub Actions workflow runs **daily at 12:01 AM IST** to fetch fresh IPL data from CricAPI.
-
-### Setup
-
-1. Go to **Settings → Secrets and variables → Actions → New repository secret**
-2. Add your CricAPI key:
-   ```
-   Name:  CRICAPI_KEY
-   Value: your-cricapi-key
-   ```
-3. The workflow auto-updates `src/utils/iplData.js` and triggers a redeploy
-
-### Manual Trigger
-
-Go to **Actions → Update IPL Data → Run workflow**
-
-### How It Works
-
-```
-GitHub Actions (daily 12:01 AM IST)
-    │
-    ├── Fetches points table from CricAPI
-    ├── Fetches completed matches from CricAPI
-    ├── Loads schedule.json (all 70 matches)
-    ├── Classifies: start time + 4hrs < now → completed
-    ├── Generates iplData.js with 3 sections:
-    │   - pointsTable (live standings)
-    │   - completedMatches (finished games)
-    │   - remainingMatches (upcoming games)
-    └── Commits & pushes to main
-```
-
-### Manual Override
-
-If API data is incorrect, you can manually edit `src/utils/iplData.js` and push. Your changes will persist until the next scheduled auto-update at 12:01 AM IST.
-
-## Deployment
-
-### Vercel (Recommended)
-
-```bash
-npm i -g vercel
-vercel
-```
-
-### Netlify
+### Production Build
 
 ```bash
 npm run build
-npx netlify deploy --prod --dir=dist
+npm run preview
 ```
 
-## Data Flow
+## Data Update Script
 
+Use this when you want to refresh local project data from CricAPI.
+
+1. Create `.env` in `ipl-predictor/`
+2. Add:
+
+```bash
+CRICAPI_KEY=your_api_key_here
 ```
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│   LocalStorage  │────▶│  Data Formatter  │────▶│  Points Table   │
-│   (24hr cache)  │     │  (teams/matches) │     │  (sorted)       │
-└─────────────────┘     └──────────────────┘     └────────────────┘
-                                                          │
-┌─────────────────     ┌──────────────────┐     ┌────────▼────────┐
-│   DFS Algorithm │────│  Match Selection │◀────│  User Picks     │
-│   (2^N sims)    │     │  (winner picks)  │     │  Winners        │
-└────────┬────────┘     └──────────────────┘     └─────────────────┘
-         │
-         ▼
-─────────────────┐     ┌──────────────────┐
-│   Scenarios     │────▶│  Scenario Page   │
-│   (1-3 inline)  │     │  (all scenarios) │
-└─────────────────┘     └──────────────────┘
+
+3. Run:
+
+```bash
+node scripts/update-data.mjs
 ```
+
+This updates:
+- `src/utils/iplData.js`
+- `src/data/api-dump.latest.json`
+
+## NPM Scripts
+
+- `npm run dev` - start development server
+- `npm run build` - create production build
+- `npm run preview` - preview production build locally
+- `npm run lint` - run lint checks
+
+## Contributing
+
+Contributions are welcome. For quality PRs:
+
+1. Fork the repository.
+2. Create a focused branch (`feat/...`, `fix/...`, `docs/...`).
+3. Keep commits small and descriptive.
+4. Run `npm run lint` and verify app behavior locally.
+5. Open a PR with:
+- problem summary
+- approach
+- screenshots/GIFs for UI changes
+- test/validation notes
+
+## Known Notes
+
+- Scenario exploration grows exponentially; DFS is intentionally gated to smaller search spaces.
+- Qualification scenarios are deterministic based on current cached data and selected winners.
+- API response structures may change; `scripts/update-data.mjs` includes normalization + retry logic.
 
 ## License
 
-MIT License
+MIT
 
 ## Author
 
-**Sourabh Singh** — [GitHub](https://github.com/Sourabh12345singh)
+Sourabh Singh  
+GitHub: https://github.com/Sourabh12345singh
+
+

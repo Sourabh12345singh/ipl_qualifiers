@@ -86,6 +86,83 @@ export const findQualificationScenarios = (
     return { possible: false, message: 'Select at least one team' };
   }
 
+  // High-performance heuristic when remaining matches > 15 to avoid browser freeze
+  if (remainingMatches.length > 15) {
+    const failedTeams = [];
+    const passedTeams = [];
+
+    selectedTeamIds.forEach(id => {
+      const team = teams.find(t => t.id === id);
+      if (!team) return;
+      
+      const x = team.won;
+      const y = remainingMatches.filter(m => m.team1 === id || m.team2 === id).length;
+      
+      if (x + y >= 7) {
+        passedTeams.push(team);
+      } else {
+        failedTeams.push(team);
+      }
+    });
+
+    if (failedTeams.length > 0) {
+      const failedNames = failedTeams.map(t => t.shortName || t.id.toUpperCase()).join(', ');
+      return {
+        possible: false,
+        message: `Qualification is mathematically impossible together. The following team(s) cannot reach the minimum qualifying threshold of 7 wins: ${failedNames}.`,
+        totalSimulations: 0,
+        isHeuristic: true
+      };
+    }
+
+    // All selected teams pass the heuristic check
+    const selectedNames = selectedTeamIds.map(id => id.toUpperCase()).join(', ');
+    
+    // Construct predicted standings for these teams
+    const finalStandings = [];
+    selectedTeamIds.forEach(id => {
+      const t = teams.find(team => team.id === id);
+      if (!t) return;
+      const remaining = remainingMatches.filter(m => m.team1 === id || m.team2 === id).length;
+      finalStandings.push({
+        id: t.id,
+        shortName: t.shortName,
+        points: t.points + remaining * 2,
+        nrr: t.nrr
+      });
+    });
+
+    // Pad to exactly 4 teams using other top teams
+    teams.forEach(t => {
+      if (finalStandings.length >= 4) return;
+      if (!selectedTeamIds.includes(t.id)) {
+        finalStandings.push({
+          id: t.id,
+          shortName: t.shortName,
+          points: t.points,
+          nrr: t.nrr
+        });
+      }
+    });
+
+    return {
+      possible: true,
+      scenarios: [
+        {
+          scenarioText: [
+            `All selected teams (${selectedNames}) have a mathematical chance to qualify (potential to reach 7+ wins!).`,
+            `Because there are ${remainingMatches.length} remaining matches (greater than 15), exact scenarios are bypassed to keep the app responsive.`,
+            `💡 Tip: Try predicting outcomes of upcoming matches to reduce the remaining count to 15 or less and unlock exact pathways.`
+          ],
+          finalStandings: finalStandings.slice(0, 4)
+        }
+      ],
+      totalScenarios: 1,
+      totalSimulations: 0,
+      isHeuristic: true
+    };
+  }
+
   const scenarios = [];
   let totalSimulations = 0;
 
