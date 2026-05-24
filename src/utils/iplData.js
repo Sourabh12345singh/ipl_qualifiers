@@ -13,7 +13,7 @@ const defaultData = {
         "lost": 5,
         "noResult": 0,
         "points": 18,
-        "nrr": 1.065
+        "nrr": 0.783
     },
     {
         "team": "Gujarat Titans",
@@ -33,7 +33,7 @@ const defaultData = {
         "lost": 5,
         "noResult": 0,
         "points": 18,
-        "nrr": 0.35
+        "nrr": 0.524
     },
     {
         "team": "Punjab Kings",
@@ -43,7 +43,7 @@ const defaultData = {
         "lost": 6,
         "noResult": 1,
         "points": 15,
-        "nrr": 0.227
+        "nrr": 0.309
     },
     {
         "team": "Rajasthan Royals",
@@ -62,7 +62,7 @@ const defaultData = {
         "won": 5,
         "lost": 6,
         "noResult": 1,
-        "points": 12,
+        "points": 13,
         "nrr": 0.011
     },
     {
@@ -102,8 +102,8 @@ const defaultData = {
         "won": 3,
         "lost": 10,
         "noResult": 0,
-        "points": 7,
-        "nrr": -0.702
+        "points": 8,
+        "nrr": -0.740
     }
 ],
   completedMatches: [
