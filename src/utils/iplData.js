@@ -3,7 +3,7 @@ const CACHE_TIMESTAMP_KEY = 'ipl_data_timestamp';
 const REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 const defaultData = {
-  lastUpdated: '2026-05-24T02:03:35.360Z',
+  lastUpdated: '2026-05-24T19:48:20.302Z',
   pointsTable: [
     {
         "team": "Royal Challengers Bengaluru",
@@ -36,6 +36,16 @@ const defaultData = {
         "nrr": 0.524
     },
     {
+        "team": "Rajasthan Royals",
+        "short": "RR",
+        "played": 14,
+        "won": 8,
+        "lost": 6,
+        "noResult": 0,
+        "points": 16,
+        "nrr": 0.083
+    },
+    {
         "team": "Punjab Kings",
         "short": "PBKS",
         "played": 14,
@@ -46,23 +56,23 @@ const defaultData = {
         "nrr": 0.309
     },
     {
-        "team": "Rajasthan Royals",
-        "short": "RR",
-        "played": 13,
+        "team": "Delhi Capitals",
+        "short": "DC",
+        "played": 14,
         "won": 7,
-        "lost": 6,
+        "lost": 7,
         "noResult": 0,
         "points": 14,
-        "nrr": 0.083
+        "nrr": -0.871
     },
     {
         "team": "Kolkata Knight Riders",
         "short": "KKR",
-        "played": 13,
+        "played": 14,
         "won": 5,
-        "lost": 6,
+        "lost": 7,
         "noResult": 1,
-        "points": 13,
+        "points": 12,
         "nrr": 0.011
     },
     {
@@ -76,21 +86,11 @@ const defaultData = {
         "nrr": -0.345
     },
     {
-        "team": "Delhi Capitals",
-        "short": "DC",
-        "played": 13,
-        "won": 6,
-        "lost": 7,
-        "noResult": 0,
-        "points": 12,
-        "nrr": -0.871
-    },
-    {
         "team": "Mumbai Indians",
         "short": "MI",
-        "played": 13,
+        "played": 14,
         "won": 4,
-        "lost": 9,
+        "lost": 10,
         "noResult": 0,
         "points": 8,
         "nrr": -0.51
@@ -102,11 +102,37 @@ const defaultData = {
         "won": 3,
         "lost": 10,
         "noResult": 0,
-        "points": 8,
-        "nrr": -0.740
+        "points": 7,
+        "nrr": -0.74
     }
 ],
   completedMatches: [
+    {
+        "id": 70,
+        "matchNumber": 70,
+        "team1": "KKR",
+        "team2": "DC",
+        "date": "2026-05-24",
+        "time": "19:30",
+        "venue": "Eden Gardens",
+        "status": "Delhi Capitals won by 40 runs",
+        "winner": "DC",
+        "team1Score": "",
+        "team2Score": ""
+    },
+    {
+        "id": 69,
+        "matchNumber": 69,
+        "team1": "MI",
+        "team2": "RR",
+        "date": "2026-05-24",
+        "time": "15:30",
+        "venue": "Wankhede Stadium",
+        "status": "Rajasthan Royals won by 30 runs",
+        "winner": "RR",
+        "team1Score": "",
+        "team2Score": ""
+    },
     {
         "id": 68,
         "matchNumber": 68,
@@ -992,34 +1018,7 @@ const defaultData = {
         "team2Score": ""
     }
 ],
-  remainingMatches: [
-    {
-        "id": 69,
-        "matchNumber": 69,
-        "team1": "MI",
-        "team2": "RR",
-        "date": "2026-05-24",
-        "time": "15:30",
-        "venue": "Wankhede Stadium",
-        "status": "Match starts at May 24, 10:00 GMT",
-        "winner": "",
-        "team1Score": "",
-        "team2Score": ""
-    },
-    {
-        "id": 70,
-        "matchNumber": 70,
-        "team1": "KKR",
-        "team2": "DC",
-        "date": "2026-05-24",
-        "time": "19:30",
-        "venue": "Eden Gardens",
-        "status": "Match starts at May 24, 14:00 GMT",
-        "winner": "",
-        "team1Score": "",
-        "team2Score": ""
-    }
-],
+  remainingMatches: [],
 };
 
 const isCacheExpired = () => {
@@ -1043,18 +1042,7 @@ const setCachedData = (data) => {
 };
 
 export const fetchIPLData = async () => {
-  const currentBuildVersion = import.meta.env.VITE_BUILD_TIMESTAMP || 'dev';
-  const storedVersion = localStorage.getItem('ipl_data_version');
   const cached = getCachedData();
-
-  if (storedVersion !== currentBuildVersion) {
-    localStorage.removeItem(CACHE_KEY);
-    localStorage.removeItem(CACHE_TIMESTAMP_KEY);
-    localStorage.setItem('ipl_data_version', currentBuildVersion);
-    setCachedData(defaultData);
-    return defaultData;
-  }
-
   if (cached && !isCacheExpired()) {
     return cached;
   }
@@ -1085,10 +1073,8 @@ export const getLastUpdated = () => {
 };
 
 export const forceRefresh = async () => {
-  const currentBuildVersion = import.meta.env.VITE_BUILD_TIMESTAMP || 'dev';
   localStorage.removeItem(CACHE_KEY);
   localStorage.removeItem(CACHE_TIMESTAMP_KEY);
-  localStorage.setItem('ipl_data_version', currentBuildVersion);
   setCachedData(defaultData);
   return defaultData;
 };
