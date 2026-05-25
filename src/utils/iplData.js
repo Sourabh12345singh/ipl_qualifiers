@@ -3,7 +3,7 @@ const CACHE_TIMESTAMP_KEY = 'ipl_data_timestamp';
 const REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 const defaultData = {
-  lastUpdated: '2026-05-24T19:48:20.302Z',
+  lastUpdated: '2026-05-25T03:25:30.623Z',
   pointsTable: [
     {
         "team": "Royal Challengers Bengaluru",
