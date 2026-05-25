@@ -1,7 +1,7 @@
 name: Update IPL Data
 
 on:
-  schedule:
+  # schedule:
     # - cron: '0 */5 * * *'
     # - cron: '31 18 * * *'   # 12:01 AM IST
     # - cron: '30 1 * * *'    # 7:00 AM IST
